@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2050
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GQL.WebApp.Typed", "GQL.WebApp.Typed\GQL.WebApp.Typed.csproj", "{E0C825D7-3392-4D5C-A06B-2E919A2FF2CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GQL.DAL", "GQL.DAL\GQL.DAL.csproj", "{83C845E1-F4A2-4836-82FF-56F3FD8F04FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0C825D7-3392-4D5C-A06B-2E919A2FF2CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0C825D7-3392-4D5C-A06B-2E919A2FF2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0C825D7-3392-4D5C-A06B-2E919A2FF2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0C825D7-3392-4D5C-A06B-2E919A2FF2CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83C845E1-F4A2-4836-82FF-56F3FD8F04FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83C845E1-F4A2-4836-82FF-56F3FD8F04FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83C845E1-F4A2-4836-82FF-56F3FD8F04FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83C845E1-F4A2-4836-82FF-56F3FD8F04FB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CE1A30C9-F619-46F2-9E5D-3AD6CD559AAE}
+	EndGlobalSection
+EndGlobal
