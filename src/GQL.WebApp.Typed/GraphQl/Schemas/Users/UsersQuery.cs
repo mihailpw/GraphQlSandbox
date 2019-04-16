@@ -2,18 +2,19 @@
 using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
+using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Models;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 
-namespace GQL.WebApp.Typed.GraphQl.Query
+namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 {
-    public class DefaultQuery : ObjectGraphType
+    public class UsersQuery : GraphQuery
     {
         private readonly AppDbContext _appDbContext;
 
 
-        public DefaultQuery(AppDbContext appDbContext)
+        public UsersQuery(AppDbContext appDbContext)
         {
             _appDbContext = appDbContext;
 

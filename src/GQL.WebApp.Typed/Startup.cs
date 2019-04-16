@@ -1,5 +1,7 @@
 ﻿using GQL.DAL;
-using GQL.WebApp.Typed.GraphQl.Query;
+using GQL.WebApp.Typed.GraphQl.Infra;
+using GQL.WebApp.Typed.GraphQl.Schemas;
+using GQL.WebApp.Typed.GraphQl.Schemas.Users;
 using GraphiQl;
 using GraphQL;
 using Microsoft.AspNetCore.Builder;
@@ -16,8 +18,12 @@ namespace GQL.WebApp.Typed
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
-            services.AddScoped<DefaultQuery>();
+
             services.AddScoped<IDocumentExecuter, DocumentExecuter>();
+
+            services.AddScoped<AppSchema>();
+            services.AddGraphQuery<UsersQuery>();
+            services.AddGraphMutation<UsersMutation>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

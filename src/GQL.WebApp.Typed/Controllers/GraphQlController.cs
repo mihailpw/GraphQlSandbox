@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
 using GQL.WebApp.Typed.GraphQl;
-using GQL.WebApp.Typed.GraphQl.Query;
+using GQL.WebApp.Typed.GraphQl.Schemas;
 using GraphQL;
-using GraphQL.Types;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GQL.WebApp.Typed.Controllers
@@ -11,13 +10,13 @@ namespace GQL.WebApp.Typed.Controllers
     public class GraphQlController : ControllerBase
     {
         private readonly IDocumentExecuter _documentExecuter;
-        private readonly DefaultQuery _defaultQuery;
+        private readonly AppSchema _appSchema;
 
 
-        public GraphQlController(IDocumentExecuter documentExecuter, DefaultQuery defaultQuery)
+        public GraphQlController(IDocumentExecuter documentExecuter, AppSchema appSchema)
         {
             _documentExecuter = documentExecuter;
-            _defaultQuery = defaultQuery;
+            _appSchema = appSchema;
         }
 
 
@@ -26,10 +25,7 @@ namespace GQL.WebApp.Typed.Controllers
         {
             var options = new ExecutionOptions
             {
-                Schema = new Schema
-                {
-                    Query = _defaultQuery,
-                },
+                Schema = _appSchema,
                 Query = model.Query,
                 OperationName = model.OperationName,
                 Inputs = model.Variables.ToInputs(),
