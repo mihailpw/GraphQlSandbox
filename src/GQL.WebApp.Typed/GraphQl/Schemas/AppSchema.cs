@@ -8,10 +8,12 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas
     {
         public AppSchema(
             IEnumerable<GraphQuery> graphQueries,
-            IEnumerable<GraphMutation> graphMutations)
+            IEnumerable<GraphMutation> graphMutations,
+            IEnumerable<GraphSubscription> graphSubscriptions)
         {
             Query = new CompositeObjectGraphType(graphQueries);
             Mutation = new CompositeObjectGraphType(graphMutations);
+            Subscription = new CompositeObjectGraphType(graphSubscriptions);
         }
     }
 }

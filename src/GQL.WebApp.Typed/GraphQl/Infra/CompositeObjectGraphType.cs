@@ -5,9 +5,9 @@ namespace GQL.WebApp.Typed.GraphQl.Infra
 {
     public sealed class CompositeObjectGraphType : ObjectGraphType
     {
-        public CompositeObjectGraphType(IEnumerable<ObjectGraphType> objectGraphTypes)
+        public CompositeObjectGraphType(IEnumerable<ObjectGraphType> graphTypes)
         {
-            foreach (var objectGraphType in objectGraphTypes)
+            foreach (var objectGraphType in graphTypes)
             {
                 foreach (var resolvedInterface in objectGraphType.ResolvedInterfaces)
                 {

@@ -21,9 +21,10 @@ namespace GQL.WebApp.Typed
 
             services.AddScoped<IDocumentExecuter, DocumentExecuter>();
 
-            services.AddScoped<AppSchema>();
+            services.AddGraphSchema<AppSchema>();
             services.AddGraphQuery<UsersQuery>();
             services.AddGraphMutation<UsersMutation>();
+            services.AddGraphSubscription<UsersSubscription>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
