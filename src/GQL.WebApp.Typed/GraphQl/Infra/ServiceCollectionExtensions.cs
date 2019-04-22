@@ -1,37 +1,34 @@
-﻿using GraphQL.Types;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GQL.WebApp.Typed.GraphQl.Infra
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddGraphSchema<T>(this IServiceCollection services) where T : class, ISchema
+        public static void AddGraphSchema<TSchema, TQuery>(this IServiceCollection services)
+            where TSchema : GraphSchema
+            where TQuery : GraphQuery
         {
-            Add<ISchema, T>(services);
-            Add<T, T>(services);
+            services.AddScoped<TSchema>();
+            services.AddScoped<TQuery>();
         }
 
-        public static void AddGraphQuery<T>(this IServiceCollection services) where T : GraphQuery
+        public static void AddGraphSchema<TSchema, TQuery, TMutation>(this IServiceCollection services)
+            where TSchema : GraphSchema
+            where TQuery : GraphQuery
+            where TMutation : GraphMutation
         {
-            Add<GraphQuery, T>(services);
+            services.AddGraphSchema<TSchema, TQuery>();
+            services.AddScoped<TMutation>();
         }
 
-        public static void AddGraphMutation<T>(this IServiceCollection services) where T : GraphMutation
+        public static void AddGraphSchema<TSchema, TQuery, TMutation, TSubscription>(this IServiceCollection services)
+            where TSchema : GraphSchema
+            where TQuery : GraphQuery
+            where TMutation : GraphMutation
+            where TSubscription : GraphSubscription
         {
-            Add<GraphMutation, T>(services);
-        }
-
-        public static void AddGraphSubscription<T>(this IServiceCollection services) where T : GraphSubscription
-        {
-            Add<GraphSubscription, T>(services);
-        }
-
-        private static void Add<TService, TImplementation>(IServiceCollection services)
-            where TService : class
-            where TImplementation : class, TService
-        {
-            services.TryAddScoped<TService, TImplementation>();
+            services.AddGraphSchema<TSchema, TQuery, TMutation>();
+            services.AddScoped<TSubscription>();
         }
     }
 }

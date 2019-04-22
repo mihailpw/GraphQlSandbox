@@ -8,7 +8,7 @@ using GraphQL.Subscription;
 
 namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 {
-    internal class UsersSubscription : GraphSubscription
+    public class UsersSubscription : GraphSubscription
     {
         public UsersSubscription()
         {

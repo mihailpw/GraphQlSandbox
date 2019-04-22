@@ -20,7 +20,7 @@
     "GQL.WebApp.Typed": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "graphql",
+      "launchUrl": "ui/playground",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
