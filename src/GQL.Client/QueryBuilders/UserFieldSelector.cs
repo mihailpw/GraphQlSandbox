@@ -26,5 +26,11 @@ namespace GQL.Client.QueryBuilders
             Include("email");
             return this;
         }
+
+        public IUserFieldSelector IncludeFriends(bool include = true)
+        {
+            Include("friends");
+            return this;
+        }
     }
 }

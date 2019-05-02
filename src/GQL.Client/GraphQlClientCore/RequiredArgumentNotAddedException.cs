@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GQL.Client.QueryBuilders.Infra
+namespace GQL.Client.GraphQlClientCore
 {
     public class RequiredArgumentNotAddedException : Exception
     {
