@@ -2,7 +2,7 @@
 
 namespace GQL.Client.QueryBuilders
 {
-    public class AppRequestDto
+    public class QueryDto
     {
         public UserDto User { get; set; }
 

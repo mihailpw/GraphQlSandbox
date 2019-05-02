@@ -1,34 +1,16 @@
-﻿using System;
-using GQL.Client.QueryBuilders.Infra;
-
-namespace GQL.Client.QueryBuilders
+﻿namespace GQL.Client.QueryBuilders
 {
-    public class AppClient : GraphQlClientBase<AppRequestDto>
+    public class AppClient
     {
+        private readonly string _url;
+
+
         public AppClient(string url)
-            : base(url, GraphQlRequestType.Query)
         {
+            _url = url;
         }
 
 
-        public AppClient IncludeUser(
-            Action<UserQueryBuilder> buildAction,
-            bool include = true)
-        {
-            var builder = new UserQueryBuilder();
-            buildAction(builder);
-            AddQueryBuilder(builder);
-            return this;
-        }
-
-        public AppClient IncludeUsers(
-            Action<UsersQueryBuilder> buildAction,
-            bool include = true)
-        {
-            var builder = new UsersQueryBuilder();
-            buildAction(builder);
-            AddQueryBuilder(builder);
-            return this;
-        }
+        public IQueryBuilder Query => new QueryBuilder(_url);
     }
 }
