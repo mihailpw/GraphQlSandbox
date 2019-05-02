@@ -1,10 +1,9 @@
 ﻿using System;
-using GQL.Client.GraphQlClientCore;
+using System.Collections.Generic;
+using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient
 {
-    public class Query : RootRequestBuilder<Query>
-
     public interface IUserType
     {
         IUserType Id(bool include = true);
@@ -12,31 +11,41 @@ namespace GQL.Client.GeneratedClient
         IUserType Friends(string email, Action<IUserType> setupAction, bool include = true);
     }
 
-    public class UserType : TypeBase, IUserType
+    public class UserType : ObjectType, IUserType
     {
+        public UserType(string fieldName, List<Argument> arguments)
+            : base(fieldName, arguments)
+        {
+        }
+
+
         public IUserType Id(bool include = true)
         {
-            AddField("id", include);
+            if (include)
+            {
+                IncludeField("id");
+            }
             return this;
         }
 
         public IUserType Email(bool include = true)
         {
-            AddField("email", include);
+            if (include)
+            {
+                IncludeField("email");
+            }
             return this;
         }
 
         public IUserType Friends(string email, Action<IUserType> setupAction, bool include = true)
         {
-            AddObject<UserType>(
-                "friends",
-                b =>
+            if (include)
+            {
+                IncludeObject(new UserType("friends", new List<Argument>
                 {
-                    b.Arguments.AddArgument("email", "String", email);
-                    setupAction(b.Type);
-                },
-                include);
-
+                    new Argument("email", "String", email),
+                }));
+            }
             return this;
         }
     }

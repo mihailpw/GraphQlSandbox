@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace GQL.Client.GraphQlClientCore
 {
-    public class RootRequestBuilder<TDto, TType> : RequestBuilder<TType>
+    public class RootRequestBuilder<TDto>
     {
         private readonly string _url;
         private readonly bool _useGetResponse;
 
 
-        public RootRequestBuilder(string url, bool useGetResponse, string key) : base(key)
+        public RootRequestBuilder(string url, bool useGetResponse, string key)
         {
             _url = url;
             _useGetResponse = useGetResponse;
