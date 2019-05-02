@@ -7,23 +7,27 @@ namespace GQL.Client.GeneratedClient
     public interface IUserType
     {
         IUserType Id(bool include = true);
+        IUserType Name(bool include = true);
         IUserType Email(bool include = true);
         IUserType Friends(string email, Action<IUserType> setupAction, bool include = true);
     }
 
     public class UserType : ObjectType, IUserType
     {
-        public UserType(string fieldName, List<Argument> arguments)
-            : base(fieldName, arguments)
-        {
-        }
-
-
         public IUserType Id(bool include = true)
         {
             if (include)
             {
                 IncludeField("id");
+            }
+            return this;
+        }
+
+        public IUserType Name(bool include = true)
+        {
+            if (include)
+            {
+                IncludeField("name");
             }
             return this;
         }
@@ -41,10 +45,15 @@ namespace GQL.Client.GeneratedClient
         {
             if (include)
             {
-                IncludeObject(new UserType("friends", new List<Argument>
-                {
-                    new Argument("email", "String", email),
-                }));
+                var type = new UserType();
+                setupAction(type);
+                IncludeField(
+                    "friends",
+                    new List<Argument>
+                    {
+                        new Argument("email", "String", email),
+                    },
+                    type);
             }
             return this;
         }

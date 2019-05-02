@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace GQL.Client.QueryBuilders.Infra
+namespace GQL.Client.Infra
 {
-    public class GraphQlError
+    public class Error
     {
         public string Message { get; }
 
@@ -11,7 +11,7 @@ namespace GQL.Client.QueryBuilders.Infra
         public IReadOnlyDictionary<string, object> AdditionalEntries { get; set; }
 
 
-        public GraphQlError(
+        public Error(
             string message,
             IReadOnlyList<Location> locations,
             IReadOnlyDictionary<string, object> additionalEntries)

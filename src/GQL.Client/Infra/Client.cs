@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GQL.Client.QueryBuilders.Infra;
 using GraphQL.Client;
 using GraphQL.Common.Request;
 using GraphQL.Common.Response;
 using Newtonsoft.Json.Linq;
 
-namespace GQL.Client.GraphQlClientCore
+namespace GQL.Client.Infra
 {
     public interface IClient<T>
     {
@@ -61,9 +60,9 @@ namespace GQL.Client.GraphQlClientCore
             if (graphQlResponse.Errors != null && graphQlResponse.Errors.Length > 0)
             {
                 var errors = graphQlResponse.Errors.Select(
-                        e => new GraphQlError(
+                        e => new Error(
                             e.Message,
-                            e.Locations?.Select(l => new GraphQlError.Location(l.Column, l.Line)).ToList(),
+                            e.Locations?.Select(l => new Error.Location(l.Column, l.Line)).ToList(),
                             e.AdditonalEntries?.ToDictionary(p => p.Key, p => (object)p.Value)))
                     .ToList();
 

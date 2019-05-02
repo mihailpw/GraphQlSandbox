@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using GQL.Client.QueryBuilders;
+using GQL.Client.GeneratedClient;
 
 namespace GQL.Client
 {
@@ -8,16 +8,20 @@ namespace GQL.Client
     {
         public static async Task Main(string[] args)
         {
-            var requestBuilder = new AppClient("https://localhost:5001/graphql")
-                .Query
-                .IncludeUser(
-                    b => b.IncludeId()
-                        .IncludeEmail())
-                .IncludeUsers(
-                    b => b.IncludeId()
-                        .IncludeEmail());
+            var client = new AppClient("https://localhost:5001/graphql")
+                .Query(q => q
+                    .User("e6714b76-74da-4931-8f61-09b690a327c4", u => u
+                        .Id()
+                        .Email())
+                    .Users(u => u
+                        .Id()
+                        .Email()
+                        .Friends(null, f => f
+                            .Id()
+                            .Name()
+                            .Email())));
 
-            var response = await requestBuilder.SendAsync();
+            var response = await client.RequestAsync();
 
 
             Console.ReadLine();

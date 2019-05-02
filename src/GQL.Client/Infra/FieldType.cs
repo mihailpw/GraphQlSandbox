@@ -3,20 +3,18 @@ using System.Text;
 
 namespace GQL.Client.Infra
 {
-    public abstract class ObjectTypeBase : TypeBase
+    public class FieldType : TypeBase
     {
-        private readonly string _fieldName;
+        private readonly string _name;
         private readonly List<Argument> _arguments;
+        private readonly TypeBase _type;
 
-        private readonly List<TypeBase> _types;
 
-
-        protected ObjectTypeBase(string fieldName, List<Argument> arguments)
+        public FieldType(string name, List<Argument> arguments, TypeBase type)
         {
-            _fieldName = fieldName;
+            _name = name;
             _arguments = arguments;
-
-            _types = new List<TypeBase>();
+            _type = type;
         }
 
 
@@ -27,18 +25,15 @@ namespace GQL.Client.Infra
                 yield return argument;
             }
 
-            foreach (var type in _types)
+            foreach (var argument in _type.GetArguments())
             {
-                foreach (var argument in type.GetArguments())
-                {
-                    yield return argument;
-                }
+                yield return argument;
             }
         }
 
         public sealed override void AppendQuery(StringBuilder builder)
         {
-            builder.Append(_fieldName);
+            builder.Append(_name);
 
             if (_arguments.Count > 0)
             {
@@ -52,23 +47,8 @@ namespace GQL.Client.Infra
             }
 
             builder.Append("{");
-            foreach (var type in _types)
-            {
-                type.AppendQuery(builder);
-                builder.Append(" ");
-            }
+            _type.AppendQuery(builder);
             builder.Append("}");
-        }
-
-
-        protected void IncludeField(string fieldName)
-        {
-            _types.Add(new ScalarType(fieldName));
-        }
-
-        protected void IncludeObject(ObjectType objectType)
-        {
-            _types.Add(objectType);
         }
     }
 }

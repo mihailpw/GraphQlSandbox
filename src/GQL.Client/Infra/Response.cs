@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GQL.Client.QueryBuilders.Infra
+namespace GQL.Client.Infra
 {
-    public class GraphQlResponse<T>
+    public class Response<T>
     {
         private readonly T _data;
 
@@ -25,18 +25,18 @@ namespace GQL.Client.QueryBuilders.Infra
             }
         }
 
-        public IReadOnlyList<GraphQlError> Errors { get; }
+        public IReadOnlyList<Error> Errors { get; }
 
 
-        public GraphQlResponse(T data)
+        public Response(T data)
         {
             _data = data;
 
             IsCompleted = true;
-            Errors = Array.Empty<GraphQlError>();
+            Errors = Array.Empty<Error>();
         }
 
-        public GraphQlResponse(IReadOnlyList<GraphQlError> errors)
+        public Response(IReadOnlyList<Error> errors)
         {
             Errors = errors;
 

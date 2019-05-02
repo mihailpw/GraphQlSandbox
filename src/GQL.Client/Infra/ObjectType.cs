@@ -5,28 +5,17 @@ namespace GQL.Client.Infra
 {
     public abstract class ObjectType : TypeBase
     {
-        private readonly string _fieldName;
-        private readonly List<Argument> _arguments;
-
         private readonly List<TypeBase> _types;
 
 
-        protected ObjectType(string fieldName, List<Argument> arguments)
+        protected ObjectType()
         {
-            _fieldName = fieldName;
-            _arguments = arguments;
-
             _types = new List<TypeBase>();
         }
 
 
         public sealed override IEnumerable<Argument> GetArguments()
         {
-            foreach (var argument in _arguments)
-            {
-                yield return argument;
-            }
-
             foreach (var type in _types)
             {
                 foreach (var argument in type.GetArguments())
@@ -36,28 +25,13 @@ namespace GQL.Client.Infra
             }
         }
 
-        public sealed override void AppendQuery(StringBuilder builder)
+        public override void AppendQuery(StringBuilder builder)
         {
-            builder.Append(_fieldName);
-
-            if (_arguments.Count > 0)
-            {
-                builder.Append("(");
-                foreach (var argument in _arguments)
-                {
-                    builder.Append($"{argument.Name}:${argument.ArgumentName},");
-                }
-                builder.Length--;
-                builder.Append(")");
-            }
-
-            builder.Append("{");
             foreach (var type in _types)
             {
                 type.AppendQuery(builder);
                 builder.Append(" ");
             }
-            builder.Append("}");
         }
 
 
@@ -66,9 +40,9 @@ namespace GQL.Client.Infra
             _types.Add(new ScalarType(fieldName));
         }
 
-        protected void IncludeObject(ObjectType objectType)
+        protected void IncludeField(string fieldName, List<Argument> arguments, TypeBase type)
         {
-            _types.Add(objectType);
+            _types.Add(new FieldType(fieldName, arguments, type));
         }
     }
 }
