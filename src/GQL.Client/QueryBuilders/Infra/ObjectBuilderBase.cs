@@ -1,14 +1,19 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace GQL.Client.QueryBuilders.Infra
 {
     public abstract class ObjectBuilderBase : BuilderBase
     {
+        private readonly string _key;
+
         protected readonly List<BuilderBase> Includes;
 
 
-        protected ObjectBuilderBase()
+        protected ObjectBuilderBase(string key)
         {
+            _key = key;
+
             Includes = new List<BuilderBase>();
         }
 
@@ -24,6 +29,25 @@ namespace GQL.Client.QueryBuilders.Infra
             }
         }
 
+        public sealed override string Build()
+        {
+            var stringBuilder = new StringBuilder(_key);
+
+            BuildArguments(stringBuilder);
+
+            stringBuilder.Append("{");
+            foreach (var include in Includes)
+            {
+                stringBuilder.Append(include.Build());
+                stringBuilder.Append(" ");
+            }
+            stringBuilder.Append("}");
+
+            return stringBuilder.ToString();
+        }
+
+
+        protected abstract void BuildArguments(StringBuilder builder);
 
         protected void Include(string fieldName, bool include = true)
         {

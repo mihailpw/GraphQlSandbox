@@ -6,16 +6,13 @@ namespace GQL.Client.QueryBuilders.Infra
 {
     public abstract class InnerObjectBuilderBase : ObjectBuilderBase
     {
-        private readonly string _key;
-
         private readonly List<string> _requiredArguments;
         private readonly List<ArgumentData> _arguments;
 
 
         protected InnerObjectBuilderBase(string key)
+            : base(key)
         {
-            _key = key;
-
             _requiredArguments = new List<string>();
             _arguments = new List<ArgumentData>();
         }
@@ -38,32 +35,6 @@ namespace GQL.Client.QueryBuilders.Infra
             }
         }
 
-        public sealed override string Build()
-        {
-            var stringBuilder = new StringBuilder(_key);
-
-            if (_arguments.Count > 0)
-            {
-                stringBuilder.Append("(");
-                foreach (var argument in _arguments)
-                {
-                    stringBuilder.Append($"{argument.FieldName}:${argument.ArgumentName},");
-                }
-                stringBuilder.Length--;
-                stringBuilder.Append(")");
-            }
-
-            stringBuilder.Append("{");
-            foreach (var include in Includes)
-            {
-                stringBuilder.Append(include.Build());
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-
-            return stringBuilder.ToString();
-        }
-
         public override IEnumerable<ArgumentData> EnumerateArguments()
         {
             foreach (var argument in _arguments)
@@ -77,6 +48,22 @@ namespace GQL.Client.QueryBuilders.Infra
             }
         }
 
+
+        protected override void BuildArguments(StringBuilder builder)
+        {
+            if (_arguments.Count == 0)
+            {
+                return;
+            }
+
+            builder.Append("(");
+            foreach (var argument in _arguments)
+            {
+                builder.Append($"{argument.FieldName}:${argument.ArgumentName},");
+            }
+            builder.Length--;
+            builder.Append(")");
+        }
 
         protected void AddRequiredArgument(string fieldName)
         {

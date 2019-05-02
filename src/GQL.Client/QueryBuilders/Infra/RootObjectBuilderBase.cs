@@ -7,51 +7,20 @@ using Newtonsoft.Json.Linq;
 
 namespace GQL.Client.QueryBuilders.Infra
 {
-    public abstract class RootObjectBuilderBase<TDto> : ObjectBuilderBase, IClient<TDto>
+    public class RootObjectBuilderBase<TDto> : ObjectBuilderBase, IClient<TDto>
     {
-        private readonly string _key;
-
         private readonly GraphQLClient _client;
 
 
         protected RootObjectBuilderBase(string url, string key)
+            : base(key)
         {
-            _key = key;
-
             _client = new GraphQLClient(url);
         }
 
 
         public override void ThrowIfNotValid()
         {
-        }
-
-        public sealed override string Build()
-        {
-            var stringBuilder = new StringBuilder(_key);
-
-            var arguments = EnumerateArguments().ToList();
-
-            if (arguments.Count > 0)
-            {
-                stringBuilder.Append("(");
-                foreach (var argument in arguments)
-                {
-                    stringBuilder.Append($"${argument.ArgumentName}:{argument.FieldTypeName},");
-                }
-                stringBuilder.Length--;
-                stringBuilder.Append(")");
-            }
-
-            stringBuilder.Append("{");
-            foreach (var include in Includes)
-            {
-                stringBuilder.Append(include.Build());
-                stringBuilder.Append(" ");
-            }
-            stringBuilder.Append("}");
-
-            return stringBuilder.ToString();
         }
 
         public async Task<GraphQlResponse<TDto>> SendAsync()
@@ -86,6 +55,25 @@ namespace GQL.Client.QueryBuilders.Infra
             var dto = jData.ToObject<TDto>();
 
             return new GraphQlResponse<TDto>(dto);
+        }
+
+
+        protected override void BuildArguments(StringBuilder builder)
+        {
+            var arguments = EnumerateArguments().ToList();
+
+            if (arguments.Count == 0)
+            {
+                return;
+            }
+
+            builder.Append("(");
+            foreach (var argument in arguments)
+            {
+                builder.Append($"${argument.ArgumentName}:{argument.FieldTypeName},");
+            }
+            builder.Length--;
+            builder.Append(")");
         }
     }
 }

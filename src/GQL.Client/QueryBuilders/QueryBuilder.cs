@@ -1,15 +1,16 @@
 ﻿using System;
+using GQL.Client.QueryBuilders.Dto;
 using GQL.Client.QueryBuilders.Infra;
 
 namespace GQL.Client.QueryBuilders
 {
-    public interface IQueryBuilder : IClient<QueryDto>
+    public interface IQueryBuilder : IClient<MutationDto>
     {
-        IQueryBuilder IncludeUser(Action<IUserBuilder> buildAction, bool include = true);
-        IQueryBuilder IncludeUsers(Action<IUsersBuilder> buildAction, bool include = true);
+        IQueryBuilder IncludeUser(Action<IUserFieldSelector> selectAction, bool include = true);
+        IQueryBuilder IncludeUsers(Action<IUserFieldSelector> selectAction, bool include = true);
     }
 
-    public class QueryBuilder : RootObjectBuilderBase<QueryDto>, IQueryBuilder
+    public class QueryBuilder : RootObjectBuilderBase<MutationDto>, IQueryBuilder
     {
         public QueryBuilder(string url)
             : base(url, "query")
@@ -18,26 +19,26 @@ namespace GQL.Client.QueryBuilders
 
 
         public IQueryBuilder IncludeUser(
-            Action<IUserBuilder> buildAction,
+            Action<IUserFieldSelector> selectAction,
             bool include = true)
         {
             if (include)
             {
-                var builder = new UserBuilder();
-                buildAction(builder);
+                var builder = new UserFieldSelector("user");
+                selectAction(builder);
                 Include(builder);
             }
             return this;
         }
 
         public IQueryBuilder IncludeUsers(
-            Action<IUsersBuilder> buildAction,
+            Action<IUserFieldSelector> selectAction,
             bool include = true)
         {
             if (include)
             {
-                var builder = new UsersBuilder();
-                buildAction(builder);
+                var builder = new UserFieldSelector("users");
+                selectAction(builder);
                 Include(builder);
             }
             return this;
