@@ -9,5 +9,7 @@ namespace GQL.DAL.Models
         public string Email { get; set; }
 
         public ICollection<UserRoleModel> Roles { get; set; }
+
+        public ICollection<UserFriendModel> Friends { get; set; }
     }
 }

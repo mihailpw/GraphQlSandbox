@@ -11,13 +11,29 @@ namespace GQL.DAL
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<UserModel>().HasKey(x => x.Id);
+            builder.Entity<UserModel>(b =>
+            {
+                b.HasKey(x => x.Id);
+            });
 
-            builder.Entity<UserRoleModel>().HasKey(x => x.Id);
-            builder.Entity<UserRoleModel>().HasOne(x => x.User).WithMany(x => x.Roles);
-            builder.Entity<UserRoleModel>().HasOne(x => x.Role);
+            builder.Entity<UserRoleModel>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasOne(x => x.User).WithMany(x => x.Roles);
+                b.HasOne(x => x.Role);
+            });
 
-            builder.Entity<RoleModel>().HasKey(x => x.Id);
+            builder.Entity<RoleModel>(b =>
+            {
+                b.HasKey(x => x.Id);
+            });
+
+            builder.Entity<UserFriendModel>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasOne(x => x.User).WithMany(x => x.Friends);
+                b.HasOne(x => x.Friend);
+            });
 
             base.OnModelCreating(builder);
         }

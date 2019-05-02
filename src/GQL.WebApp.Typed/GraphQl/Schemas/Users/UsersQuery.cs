@@ -21,7 +21,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
             FieldAsync<UserType>(
                 "user",
                 arguments: new QueryArguments(
-                    new QueryArgument<IdGraphType>
+                    new QueryArgument<NonNullGraphType<IdGraphType>>
                     {
                         Name = "id",
                         Description = "User identificator",
@@ -55,9 +55,14 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
         {
             IQueryable<UserModel> resultQuery = _appDbContext.Set<UserModel>();
 
-            if (context.SubFields.Values.TryFindField(nameof(UserModel.Roles), out var _))
+            if (context.SubFields.Values.TryFindField(nameof(UserModel.Roles), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Roles).ThenInclude(r => r.Role);
+            }
+
+            if (context.SubFields.Values.TryFindField(nameof(UserModel.Friends), out _))
+            {
+                resultQuery = resultQuery.Include(u => u.Friends).ThenInclude(r => r.Friend);
             }
 
             return resultQuery;
