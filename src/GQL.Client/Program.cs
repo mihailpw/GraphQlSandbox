@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using GQL.Client.Dto;
 using GQL.Client.GeneratedClient;
 
 namespace GQL.Client
@@ -8,7 +9,9 @@ namespace GQL.Client
     {
         public static async Task Main(string[] args)
         {
-            var client = new AppClient("https://localhost:5001/graphql")
+            var clientProvider = new AppClientProvider("https://localhost:5001/graphql");
+
+            var query = clientProvider
                 .Query(q => q
                     .User("e6714b76-74da-4931-8f61-09b690a327c4", u => u
                         .Id()
@@ -21,8 +24,17 @@ namespace GQL.Client
                             .Name()
                             .Email())));
 
-            var response = await client.RequestAsync();
+            var queryResponse = await query.RequestAsync();
 
+            var mutation = new AppClientProvider("https://localhost:5001/graphql")
+                .Mutation(q => q
+                    .CreateUser(new UserInputDto { Email = "ss@ss.ss", Name = "ss s ss" }, u => u
+                        .Id()
+                        .Email()));
+
+            var mutationResponse = await mutation.RequestAsync();
+
+            queryResponse = await query.RequestAsync();
 
             Console.ReadLine();
         }

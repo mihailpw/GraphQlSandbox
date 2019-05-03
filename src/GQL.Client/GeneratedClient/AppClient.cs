@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using GQL.Client.Dto;
 using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient
 {
-    public class AppClient
+    public class AppClientProvider : ClientProviderBase
     {
-        private readonly string _url;
-        private readonly bool _useGetRequest;
-
-
-        public AppClient(string url, bool useGetRequest = true)
+        public AppClientProvider(string url, bool usePostRequest = true)
+            : base(url, usePostRequest)
         {
-            _url = url;
-            _useGetRequest = useGetRequest;
         }
 
 
@@ -23,15 +16,14 @@ namespace GQL.Client.GeneratedClient
         {
             var type = new QueryType();
             action(type);
-            var rootType = new RootType("query", type);
+            return CreateClient<QueryDto>("query", type);
+        }
 
-            var stringBuilder = new StringBuilder();
-            rootType.AppendQuery(stringBuilder);
-            var query = stringBuilder.ToString();
-
-            var variables = rootType.GetArguments().ToDictionary(a => a.ArgumentName, a => a.Value);
-
-            return new Client<QueryDto>(_url, query, variables, _useGetRequest);
+        public IClient<MutationDto> Mutation(Action<IMutationType> action)
+        {
+            var type = new MutationType();
+            action(type);
+            return CreateClient<MutationDto>("mutation", type);
         }
     }
 }

@@ -2,6 +2,6 @@
 {
     public class MutationDto
     {
-        public UserDto AddUser { get; set; }
+        public UserDto CreateUser { get; set; }
     }
 }

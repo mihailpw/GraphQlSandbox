@@ -29,7 +29,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
         {
             var user = context.GetArgument<UserModel>("user");
 
-            context.Errors.Add(new InvalidValueException("user", "bad"));
+            // context.Errors.Add(new InvalidValueException("user", "bad"));
 
             await _appDbContext.AddAsync(user);
             await _appDbContext.SaveChangesAsync();

@@ -15,15 +15,15 @@ namespace GQL.Client.Infra
 
     public class Client<T> : IClient<T>
     {
-        private readonly bool _useGetResponse;
+        private readonly bool _usePostResponse;
 
         private readonly GraphQLClient _client;
         private readonly GraphQLRequest _request;
 
 
-        public Client(string url, string query, Dictionary<string, object> variables, bool useGetResponse)
+        public Client(string url, string query, Dictionary<string, object> variables, bool usePostResponse)
         {
-            _useGetResponse = useGetResponse;
+            _usePostResponse = usePostResponse;
 
             _client = new GraphQLClient(url);
             _request = new GraphQLRequest
@@ -45,14 +45,9 @@ namespace GQL.Client.Infra
 
         private async Task<GraphQLResponse> SendAsync()
         {
-            if (_useGetResponse)
-            {
-                return await _client.GetAsync(_request);
-            }
-            else
-            {
-                return await _client.PostAsync(_request);
-            }
+            return _usePostResponse
+                ? await _client.PostAsync(_request)
+                : await _client.GetAsync(_request);
         }
 
         private static Response<T> ProcessResponse(GraphQLResponse graphQlResponse)
