@@ -44,5 +44,10 @@ namespace GQL.Client.Infra
         {
             _types.Add(new FieldType(fieldName, arguments, type));
         }
+
+        protected void IncludeField(FieldType type)
+        {
+            _types.Add(type);
+        }
     }
 }

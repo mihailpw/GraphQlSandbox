@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient
@@ -9,7 +8,7 @@ namespace GQL.Client.GeneratedClient
         IUserType Id(bool include = true);
         IUserType Name(bool include = true);
         IUserType Email(bool include = true);
-        IUserType Friends(string email, Action<IUserType> setupAction, bool include = true);
+        ITypeConfigurator<IUserType, IUserType> Friends(string email = null);
     }
 
     public class UserType : ObjectType, IUserType
@@ -41,21 +40,17 @@ namespace GQL.Client.GeneratedClient
             return this;
         }
 
-        public IUserType Friends(string email, Action<IUserType> setupAction, bool include = true)
+        ITypeConfigurator<IUserType, IUserType> IUserType.Friends(string email)
         {
-            if (include)
-            {
-                var type = new UserType();
-                setupAction(type);
-                IncludeField(
-                    "friends",
-                    new List<Argument>
-                    {
-                        new Argument("email", "String", email),
-                    },
-                    type);
-            }
-            return this;
+            return new ObjectTypeConfigurator<IUserType, IUserType>(
+                this,
+                "friends",
+                new List<Argument>
+                {
+                    new Argument("email", "String", email),
+                },
+                () => new UserType(),
+                IncludeField);
         }
     }
 }
