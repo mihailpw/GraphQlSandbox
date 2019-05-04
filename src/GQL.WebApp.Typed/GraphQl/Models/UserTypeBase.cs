@@ -4,27 +4,28 @@ using GraphQL.Types;
 
 namespace GQL.WebApp.Typed.GraphQl.Models
 {
-    public class UserType : EntityBaseType<UserModel>
+    public abstract class UserTypeBase<TUser> : EntityBaseType<TUser>
+        where TUser : UserModelBase
     {
-        public UserType()
+        protected UserTypeBase()
         {
-            Name = "User";
+            Name = "UserInterface";
 
             Field(x => x.Name).Description("User name");
             Field(x => x.Email).Description("User email");
             Field<ListGraphType<StringGraphType>>(
-                name: nameof(UserModel.Roles),
+                name: nameof(UserModelBase.Roles),
                 description: "User roles",
                 resolve: c => c.Source.Roles.Select(r => r.Role.Name));
-            Field<ListGraphType<UserType>>(
-                name: nameof(UserModel.Friends),
+            Field<ListGraphType<UserInterface>>(
+                name: nameof(UserModelBase.Friends),
                 description: "User friends",
                 arguments: new QueryArguments(
-                    new QueryArgument<StringGraphType> { Name = "email" }),
+                    new QueryArgument<StringGraphType> {Name = "email"}),
                 resolve: ResolveFriends);
         }
 
-        private static object ResolveFriends(ResolveFieldContext<UserModel> context)
+        private static object ResolveFriends(ResolveFieldContext<TUser> context)
         {
             if (context.Source.Friends == null)
             {

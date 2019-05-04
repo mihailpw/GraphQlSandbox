@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GQL.Client.Dto;
+using GQL.Client.GeneratedClient.Dto;
 using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient

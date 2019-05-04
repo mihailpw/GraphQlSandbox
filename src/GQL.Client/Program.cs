@@ -1,15 +1,22 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
-using GQL.Client.Dto;
 using GQL.Client.GeneratedClient;
+using GQL.Client.GeneratedClient.Dto;
+using GraphQlClientGenerator;
 
 namespace GQL.Client
 {
     internal class Program
     {
+        private const string Url = "https://localhost:5001/graphql";
+
+
         public static async Task Main(string[] args)
         {
-            var clientProvider = new AppClientProvider("https://localhost:5001/graphql");
+            await GenerateClient();
+
+            var clientProvider = new AppClientProvider(Url);
 
             var query = clientProvider
                 .Query(q => q
@@ -26,7 +33,7 @@ namespace GQL.Client
 
             var queryResponse = await query.RequestAsync();
 
-            var mutation = new AppClientProvider("https://localhost:5001/graphql")
+            var mutation = new AppClientProvider(Url)
                 .Mutation(q => q
                     .CreateUser(
                         new UserInputDto { Email = "ss@ss.ss", Name = "ss s ss" }).With(u => u
@@ -38,6 +45,19 @@ namespace GQL.Client
             queryResponse = await query.RequestAsync();
 
             Console.ReadLine();
+        }
+
+        private static async Task GenerateClient()
+        {
+            var schema = await GraphQlGenerator.RetrieveSchema(Url);
+
+            var builder = new StringBuilder();
+            GraphQlGenerator.GenerateQueryBuilder(schema, builder);
+            GraphQlGenerator.GenerateDataClasses(schema, builder);
+
+            var generatedClasses = builder.ToString();
+
+            ;
         }
     }
 }

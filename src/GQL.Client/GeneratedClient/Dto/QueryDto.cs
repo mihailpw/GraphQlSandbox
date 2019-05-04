@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GQL.Client.Dto
+namespace GQL.Client.GeneratedClient.Dto
 {
     public class QueryDto
     {

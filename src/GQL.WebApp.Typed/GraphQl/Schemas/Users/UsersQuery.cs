@@ -18,7 +18,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
         {
             _appDbContext = appDbContext;
 
-            FieldAsync<UserType>(
+            FieldAsync<UserInterface>(
                 "user",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>>
@@ -28,9 +28,13 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                     }),
                 resolve: ResolveUserAsync);
 
-            FieldAsync<ListGraphType<UserType>>(
+            FieldAsync<ListGraphType<UserInterface>>(
                 "users",
                 resolve: ResolveUsersAsync);
+
+            FieldAsync<ListGraphType<CustomerUserType>>(
+                "customers",
+                resolve: ResolveCustomersAsync);
         }
 
 
@@ -51,16 +55,25 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
             return users;
         }
 
-        private IQueryable<UserModel> GetUserModelSet(ResolveFieldContext<object> context)
+        private async Task<object> ResolveCustomersAsync(ResolveFieldContext<object> context)
         {
-            IQueryable<UserModel> resultQuery = _appDbContext.Set<UserModel>();
+            var customers = await GetUserModelSet(context)
+                .OfType<CustomerUserModel>()
+                .ToListAsync();
 
-            if (context.SubFields.Values.TryFindField(nameof(UserModel.Roles), out _))
+            return customers;
+        }
+
+        private IQueryable<UserModelBase> GetUserModelSet(ResolveFieldContext<object> context)
+        {
+            IQueryable<UserModelBase> resultQuery = _appDbContext.Set<UserModelBase>();
+
+            if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Roles), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Roles).ThenInclude(r => r.Role);
             }
 
-            if (context.SubFields.Values.TryFindField(nameof(UserModel.Friends), out _))
+            if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Friends), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Friends).ThenInclude(r => r.Friend);
             }

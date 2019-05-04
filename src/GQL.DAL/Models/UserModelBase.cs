@@ -2,7 +2,7 @@
 
 namespace GQL.DAL.Models
 {
-    public class UserModel : EntityModelBase
+    public abstract class UserModelBase : EntityModelBase
     {
         public string Name { get; set; }
 

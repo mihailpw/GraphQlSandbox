@@ -11,25 +11,29 @@ namespace GQL.DAL
             var roleAdmin = new RoleModel { Id = 1, Name = "Admin" };
             var roleUser = new RoleModel { Id = 2, Name = "User" };
 
-            var userAdmin = new UserModel
+            var userAdmin = new ManagerUserModel
             {
                 Name = "Admin-01",
-                Email = "admin-01@user.us"
+                Email = "admin-01@user.us",
+                NumberOfSales = 1,
             };
-            var user1User = new UserModel
+            var user1User = new CustomerUserModel
             {
                 Name = "User-01",
                 Email = "user-01@user.us",
+                IsActive = true,
             };
-            var user2User = new UserModel
+            var user2User = new CustomerUserModel
             {
                 Name = "User-02",
                 Email = "user-02@user.us",
+                IsActive = true,
             };
-            var user3User = new UserModel
+            var user3User = new CustomerUserModel
             {
                 Name = "User-03",
                 Email = "user-03@user.us",
+                IsActive = true,
             };
 
             dbContext.AddRange(
