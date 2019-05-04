@@ -4,6 +4,7 @@ using GQL.DAL;
 using GQL.DAL.Models;
 using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Models;
+using GraphQL.Execution;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
         {
             _appDbContext = appDbContext;
 
-            FieldAsync<UserType>(
+            FieldAsync<UserInterface>(
                 "user",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>>
@@ -28,9 +29,23 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                     }),
                 resolve: ResolveUserAsync);
 
-            FieldAsync<ListGraphType<UserType>>(
+            FieldAsync<ListGraphType<UserInterface>>(
                 "users",
                 resolve: ResolveUsersAsync);
+
+            FieldAsync<IntGraphType>(
+                "usersCount",
+                arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType>
+                    {
+                        Name = "type",
+                        Description = "Can be 'c' for customer or 'm' for manager.",
+                    }),
+                resolve: ResolveUsersCountAsync);
+
+            FieldAsync<ListGraphType<CustomerUserType>>(
+                "customers",
+                resolve: ResolveCustomersAsync);
         }
 
 
@@ -51,16 +66,43 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
             return users;
         }
 
-        private IQueryable<UserModel> GetUserModelSet(ResolveFieldContext<object> context)
+        private async Task<object> ResolveUsersCountAsync(ResolveFieldContext<object> context)
         {
-            IQueryable<UserModel> resultQuery = _appDbContext.Set<UserModel>();
+            context.Arguments.TryGetValue("type", out var type);
+            switch ((string) type)
+            {
+                case "c":
+                    return await _appDbContext.Set<CustomerUserModel>().CountAsync();
+                case "m":
+                    return await _appDbContext.Set<ManagerUserModel>().CountAsync();
+                case "":
+                case null:
+                    return await _appDbContext.Set<UserModelBase>().CountAsync();
+                default:
+                    context.Errors.Add(new InvalidValueException("type", $"Type '{type}' not found."));
+                    return null;
+            }
+        }
 
-            if (context.SubFields.Values.TryFindField(nameof(UserModel.Roles), out _))
+        private async Task<object> ResolveCustomersAsync(ResolveFieldContext<object> context)
+        {
+            var customers = await GetUserModelSet(context)
+                .OfType<CustomerUserModel>()
+                .ToListAsync();
+
+            return customers;
+        }
+
+        private IQueryable<UserModelBase> GetUserModelSet(ResolveFieldContext<object> context)
+        {
+            IQueryable<UserModelBase> resultQuery = _appDbContext.Set<UserModelBase>();
+
+            if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Roles), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Roles).ThenInclude(r => r.Role);
             }
 
-            if (context.SubFields.Values.TryFindField(nameof(UserModel.Friends), out _))
+            if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Friends), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Friends).ThenInclude(r => r.Friend);
             }

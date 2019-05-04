@@ -1,4 +1,4 @@
-﻿namespace GQL.Client.Dto
+﻿namespace GQL.Client.GeneratedClient.Dto
 {
     public class UserInputDto
     {

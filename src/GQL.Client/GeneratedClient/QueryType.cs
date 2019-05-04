@@ -1,48 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient
 {
     public interface IQueryType
     {
-        IQueryType User(string id, Action<IUserType> setupAction, bool include = true);
-        IQueryType Users(Action<IUserType> setupAction, bool include = true);
+        ITypeConfigurator<IQueryType, IUserType> User(string id);
+        ITypeConfigurator<IQueryType, IUserType> Users();
     }
 
     public class QueryType : ObjectType, IQueryType
     {
-        public IQueryType User(string id, Action<IUserType> setupAction, bool include = true)
+        public ITypeConfigurator<IQueryType, IUserType> User(string id)
         {
-            if (include)
-            {
-                var type = new UserType();
-                setupAction(type);
-                IncludeField(
-                    "user",
-                    new List<Argument>
-                    {
-                        new Argument("id", "ID!", id),
-                    },
-                    type);
-            }
-            return this;
+            return new ObjectTypeConfigurator<IQueryType, IUserType>(
+                this,
+                "user",
+                new List<Argument>
+                {
+                    new Argument("id", "ID!", id),
+                },
+                () => new UserType(),
+                IncludeField);
         }
 
-        public IQueryType Users(Action<IUserType> setupAction, bool include = true)
+        public ITypeConfigurator<IQueryType, IUserType> Users()
         {
-            if (include)
-            {
-                var type = new UserType();
-                setupAction(type);
-                IncludeField(
-                    "users",
-                    new List<Argument>
-                    {
-                    },
-                    type);
-            }
-            return this;
+            return new ObjectTypeConfigurator<IQueryType, IUserType>(
+                this,
+                "users",
+                new List<Argument>
+                {
+                },
+                () => new UserType(),
+                IncludeField);
         }
     }
 }

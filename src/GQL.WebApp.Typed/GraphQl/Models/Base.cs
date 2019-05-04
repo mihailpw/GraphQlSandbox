@@ -11,4 +11,13 @@ namespace GQL.WebApp.Typed.GraphQl.Models
             Field(x => x.Id, type: typeof(IdGraphType)).Description("The identificator");
         }
     }
+
+    public abstract class InterfaceBaseType<T> : InterfaceGraphType<T>
+        where T : EntityModelBase
+    {
+        protected InterfaceBaseType()
+        {
+            //Field(x => x.Id, type: typeof(IdGraphType)).Description("The identificator");
+        }
+    }
 }

@@ -12,7 +12,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
     {
         public UsersSubscription()
         {
-            FieldSubscribeAsync<UserType>(
+            FieldSubscribeAsync<UserInterface>(
                 "addUser",
                 subscribeAsync: SubscribeAddUserAsync);
         }

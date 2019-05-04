@@ -4,10 +4,10 @@
     {
         public string UserId { get; set; }
 
-        public UserModel User { get; set; }
+        public UserModelBase User { get; set; }
 
         public string FriendId { get; set; }
 
-        public UserModel Friend { get; set; }
+        public UserModelBase Friend { get; set; }
     }
 }

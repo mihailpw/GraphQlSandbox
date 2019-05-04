@@ -11,9 +11,17 @@ namespace GQL.DAL
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<UserModel>(b =>
+            builder.Entity<UserModelBase>(b =>
             {
                 b.HasKey(x => x.Id);
+            });
+            builder.Entity<CustomerUserModel>(b =>
+            {
+                b.HasBaseType<UserModelBase>();
+            });
+            builder.Entity<ManagerUserModel>(b =>
+            {
+                b.HasBaseType<UserModelBase>();
             });
 
             builder.Entity<UserRoleModel>(b =>
