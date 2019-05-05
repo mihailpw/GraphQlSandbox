@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GQL.Client.Infra;
 
 namespace GQL.Client.GeneratedClient
@@ -7,6 +8,7 @@ namespace GQL.Client.GeneratedClient
     {
         ITypeConfigurator<IQueryType, IUserType> User(string id);
         ITypeConfigurator<IQueryType, IUserType> Users();
+        Func<Action<IUserType>, IQueryType> UserF(string id = null);
     }
 
     public class QueryType : ObjectType, IQueryType
@@ -22,6 +24,25 @@ namespace GQL.Client.GeneratedClient
                 },
                 () => new UserType(),
                 IncludeField);
+        }
+
+        public Func<Action<IUserType>, IQueryType> UserF(string id)
+        {
+            return a =>
+            {
+                var type = new UserType();
+                a(type);
+                var fieldType = new FieldType(
+                    "id",
+                    new List<Argument>
+                    {
+                            new Argument("id", "ID!", id),
+                    },
+                    type);
+                IncludeField(fieldType);
+
+                return this;
+            };
         }
 
         public ITypeConfigurator<IQueryType, IUserType> Users()

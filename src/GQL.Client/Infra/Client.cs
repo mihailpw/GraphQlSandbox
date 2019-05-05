@@ -8,12 +8,17 @@ using Newtonsoft.Json.Linq;
 
 namespace GQL.Client.Infra
 {
-    public interface IClient<T>
+    public interface IClient
+    {
+        Task<Response<TDto>> RequestAsync<TDto>();
+    }
+
+    public interface IClient<T> : IClient
     {
         Task<Response<T>> RequestAsync();
     }
 
-    public class Client<T> : IClient<T>
+    public class Client : IClient
     {
         private readonly bool _usePostResponse;
 
@@ -34,10 +39,10 @@ namespace GQL.Client.Infra
         }
 
 
-        public async Task<Response<T>> RequestAsync()
+        public async Task<Response<TDto>> RequestAsync<TDto>()
         {
             var graphQlResponse = await SendAsync();
-            var response = ProcessResponse(graphQlResponse);
+            var response = ProcessResponse<TDto>(graphQlResponse);
 
             return response;
         }
@@ -50,7 +55,7 @@ namespace GQL.Client.Infra
                 : await _client.GetAsync(_request);
         }
 
-        private static Response<T> ProcessResponse(GraphQLResponse graphQlResponse)
+        private static Response<TDto> ProcessResponse<TDto>(GraphQLResponse graphQlResponse)
         {
             if (graphQlResponse.Errors != null && graphQlResponse.Errors.Length > 0)
             {
@@ -61,13 +66,31 @@ namespace GQL.Client.Infra
                             e.AdditonalEntries?.ToDictionary(p => p.Key, p => (object)p.Value)))
                     .ToList();
 
-                return new Response<T>(errors);
+                return new Response<TDto>(errors);
             }
 
             var jData = (JToken)graphQlResponse.Data;
-            var dto = jData.ToObject<T>();
+            var dto = jData.ToObject<TDto>();
 
-            return new Response<T>(dto);
+            return new Response<TDto>(dto);
+        }
+    }
+
+    public class Client<T> : Client, IClient<T>
+    {
+        public Client(
+            string url,
+            string query,
+            Dictionary<string, object> variables,
+            bool usePostResponse)
+            : base(url, query, variables, usePostResponse)
+        {
+        }
+
+
+        public async Task<Response<T>> RequestAsync()
+        {
+            return await RequestAsync<T>();
         }
     }
 }
