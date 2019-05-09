@@ -7,15 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ExternalClientGenerator\Generated.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="ExternalClientGenerator\Generated.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="1.0.3" />
+    <PackageReference Include="GraphQL.Client" Version="2.0.0-alpha.3" />
     <PackageReference Include="GraphQlClientGenerator" Version="0.1.11" />
   </ItemGroup>
 

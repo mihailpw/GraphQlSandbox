@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
-using GQL.Client.GeneratedClientV2;
+using GraphQlClient;
+using Newtonsoft.Json;
 
 namespace GQL.Client
 {
@@ -11,100 +11,70 @@ namespace GQL.Client
 
         public static async Task Main(string[] args)
         {
-            var clientFactory = new AppClientFactory(Url)
-                .ForQuery(q => q
-                    .User("2708fef5-5ff9-442b-b3d6-113757a7fba8")(u => u
+            var clientFactory = new AppClientFactory(Url);
+
+            var client = clientFactory
+                .CreateQueryClient(q => q
+                    .User("f8dc429d-17e2-4917-89d6-227127376bc0")(u => u
                         .Friends()(f => f
                             .Id()
-                            .OnCustomerType(c => c
-                                .IsActive()
-                            )
-                        )
-                        .OnCustomerType(c => c
-                            .IsActive()
-                        )
-                    )
+                            .OnCustomer(c => c
+                                .IsActive()))
+                        .OnCustomer(c => c
+                            .IsActive()))
                     .Users()(u => u
                         .Id()
                         .Name()
                         .Friends()(f => f
                             .Id()
-                            .OnCustomerType(c => c
-                                .IsActive()
-                            )
-                        )
-                        .OnCustomerType(c => c
-                            .IsActive()
-                        )
-                    )
-                );
+                            .OnCustomer(c => c
+                                .IsActive()))
+                        .OnCustomer(c => c
+                            .IsActive())
+                        .OnManager(m => m
+                            .NumberOfSales()))
+                    .Customers()(c => c
+                        .Name()
+                        .IsActive()));
 
-            var r = await clientFactory.CreateClient().RequestAsync();
+            var response = await client.SendAsync();
 
-            await GenerateClient();
+            var subscription = await clientFactory
+                .CreateSubscriptionClient(s => s
+                    .AddUser()(u => u
+                        .Id()
+                        .Name()
+                        .Email()))
+                .SendAsync();
 
-            //var builder = new UsersQueryQueryBuilder()
-            //    .WithUser(
-            //        new UserInterfaceQueryBuilder()
-            //            .WithEmail()
-            //            .WithFriends(
-            //                new UserInterfaceQueryBuilder()
-            //                    .WithAllScalarFields(),
-            //                email: "ss@ss.ss"),
-            //        Guid.NewGuid())
-            //    .WithUsers(
-            //        new UserInterfaceQueryBuilder()
-            //            .WithEmail()
-            //            .WithId());
+            subscription.Received += (sender, r) => Console.WriteLine(JsonConvert.SerializeObject(r, Formatting.Indented));
 
-            //var r = builder.Build(Formatting.Indented);
+            await Task.Delay(1000);
 
-            //var clientProvider = new AppClientProvider(Url);
+            var mutationResponse = await clientFactory
+                .CreateMutationClient(m => m
+                    .CreateManager(new ManagerUserInputDto { Name = "name", Email = "email@mail.m" })(u => u
+                        .Id()
+                        .Name()
+                        .Email()))
+                .SendAsync();
 
-            //var query = clientProvider
-            //    .Query(q => q
-            //        .UserF()(u => u
-            //            .Id()
-            //            .Email()
-            //        )
-            //        .Users().With(u => u
-            //            .Id()
-            //            .Email()
-            //            .Friends().With(f => f
-            //                .Id()
-            //                .Name()
-            //                .Email()
-            //            )
-            //        )
-            //    );
+            await Task.Delay(1000);
 
-            //var queryResponse = await query.RequestAsync();
+            for (int i = 0; i < 100; i++)
+            {
+                var i1 = i;
+                await clientFactory
+                    .CreateMutationClient(m => m
+                        .CreateManager(new ManagerUserInputDto { Name = $"name_{i1:D3}", Email = $"email_{i1:D3}@mail.m" })(u => u
+                            .Id()
+                            .Name()
+                            .Email()))
+                    .SendAsync();
+            }
 
-            //var mutation = new AppClientProvider(Url)
-            //    .Mutation(q => q
-            //        .CreateUser(
-            //            new UserInputDto { Email = "ss@ss.ss", Name = "ss s ss" }).With(u => u
-            //            .Id()
-            //            .Email()));
 
-            //var mutationResponse = await mutation.RequestAsync();
-
-            //queryResponse = await query.RequestAsync();
-
-            Console.ReadLine();
-        }
-
-        private static async Task GenerateClient()
-        {
-            //var schema = await GraphQlGenerator.RetrieveSchema(Url);
-
-            //var builder = new StringBuilder();
-            //GraphQlGenerator.GenerateQueryBuilder(schema, builder);
-            //GraphQlGenerator.GenerateDataClasses(schema, builder);
-
-            //var generatedClasses = builder.ToString();
-
-            ;
+            Console.ReadKey();
         }
     }
 }
