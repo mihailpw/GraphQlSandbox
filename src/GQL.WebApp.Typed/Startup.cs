@@ -1,7 +1,7 @@
 ﻿using GQL.DAL;
 using GQL.WebApp.Typed.GraphQl.Infra;
-using GQL.WebApp.Typed.GraphQl.Schemas;
 using GQL.WebApp.Typed.GraphQl.Schemas.Users;
+using GQL.WebApp.Typed.Managers;
 using GraphQL;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
@@ -29,6 +29,9 @@ namespace GQL.WebApp.Typed
         {
             var isDev = _environment.IsDevelopment();
 
+            services.AddSingleton<IUsersObservable, UsersObservable>();
+            services.AddScoped<IUsersManager, UsersManager>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
 
@@ -55,10 +58,11 @@ namespace GQL.WebApp.Typed
                 app.UseHsts();
             }
 
+            app.UseWebSockets();
+
             app.UseGraphQL<UsersSchema>();
             app.UseGraphQLWebSockets<UsersSchema>();
 
-            app.UseMvc();
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions { GraphQLEndPoint = PathString.FromUriComponent("/graphql") });
 
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())

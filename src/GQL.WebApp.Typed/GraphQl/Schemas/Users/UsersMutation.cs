@@ -3,44 +3,29 @@ using GQL.DAL;
 using GQL.DAL.Models;
 using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Models;
-using GraphQL.Execution;
+using GQL.WebApp.Typed.Managers;
 using GraphQL.Types;
 
 namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 {
     public class UsersMutation : GraphMutation
     {
-        private readonly AppDbContext _appDbContext;
+        private readonly IUsersManager _usersManager;
 
 
-        public UsersMutation(AppDbContext appDbContext)
+        public UsersMutation(IUsersManager usersManager)
         {
-            _appDbContext = appDbContext;
+            _usersManager = usersManager;
 
-            FieldAsync<UserInterface>(
-                "createUser",
+            FieldAsync<ManagerUserType>(
+                "createManager",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<UserInputModel>> { Name = "user" }),
-                resolve: CreateUserAsync);
-
-            FieldAsync<UserInterface>(
-                "createUsers",
-                arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<ListGraphType<NonNullGraphType<UserInputModel>>>> { Name = "users" }),
-                resolve: CreateUserAsync);
-        }
-
-
-        private async Task<object> CreateUserAsync(ResolveFieldContext<object> context)
-        {
-            var user = context.GetArgument<UserModelBase>("user");
-
-            // context.Errors.Add(new InvalidValueException("user", "bad"));
-
-            await _appDbContext.AddAsync(user);
-            await _appDbContext.SaveChangesAsync();
-
-            return user;
+                    new QueryArgument<NonNullGraphType<ManagerUserInputType>> { Name = "manager" }),
+                resolve: async c =>
+                {
+                    var manager = c.GetArgument<ManagerUserModel>("manager");
+                    return await _usersManager.CreateManagerAsync(manager);
+                });
         }
     }
 }
