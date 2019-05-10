@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
@@ -31,6 +32,19 @@ namespace GQL.WebApp.Typed.Managers
             _usersObservable.Notify(manager);
 
             return manager;
+        }
+
+        public async Task<IEnumerable<CustomerUserModel>> CreateCustomersAsync(IList<CustomerUserModel> customers)
+        {
+            await _appDbContext.AddRangeAsync(customers);
+            await _appDbContext.SaveChangesAsync();
+
+            foreach (var customer in customers)
+            {
+                _usersObservable.Notify(customer);
+            }
+
+            return customers;
         }
     }
 }

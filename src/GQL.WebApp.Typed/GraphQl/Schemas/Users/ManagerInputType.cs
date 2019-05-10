@@ -3,11 +3,11 @@ using GraphQL.Types;
 
 namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 {
-    public class ManagerUserInputType : InputObjectGraphType<ManagerUserModel>
+    public class ManagerInputType : InputObjectGraphType<ManagerUserModel>
     {
-        public ManagerUserInputType()
+        public ManagerInputType()
         {
-            Name = "ManagerUserInput";
+            Name = "ManagerInput";
 
             Field(m => m.Name, nullable: false);
             Field(m => m.Email, nullable: false);
