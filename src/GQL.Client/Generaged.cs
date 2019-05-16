@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.Serialization;
+    using Newtonsoft.Json;
     using GraphQlClient.Infra;
 
     #region Dtos
@@ -13,13 +15,19 @@
         public string Id { get; set; }
         public string Name { get; set; }
         public List<string> Roles { get; set; }
-        public UserTypeDto Type { get; set; }
+        public UserType? Type { get; set; }
         public bool? IsActive { get; set; }
         public int? NumberOfSales { get; set; }
     }
 
-    public class UserTypeDto
+    public enum UserType
     {
+        [EnumMember(Value = "GOOD_GUY")]
+        GoodGuy,
+        [EnumMember(Value = "BAD_GUY")]
+        BadGuy,
+        [EnumMember(Value = "NOBODY")]
+        Nobody,
     }
 
     public class CustomerDto
@@ -30,7 +38,7 @@
         public bool? IsActive { get; set; }
         public string Name { get; set; }
         public List<string> Roles { get; set; }
-        public UserTypeDto Type { get; set; }
+        public UserType? Type { get; set; }
     }
 
     public class ManagerDto
@@ -41,7 +49,7 @@
         public string Name { get; set; }
         public int? NumberOfSales { get; set; }
         public List<string> Roles { get; set; }
-        public UserTypeDto Type { get; set; }
+        public UserType? Type { get; set; }
     }
 
     public class ManagerInputDto
@@ -100,17 +108,17 @@
             string email = null)
         {
             IncludingField("friends");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "friends",
                     new List<Argument>
                     {
                         new Argument("email", "String", email),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -188,17 +196,17 @@
             string email = null)
         {
             IncludingField("friends");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "friends",
                     new List<Argument>
                     {
                         new Argument("email", "String", email),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -269,17 +277,17 @@
             string email = null)
         {
             IncludingField("friends");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "friends",
                     new List<Argument>
                     {
                         new Argument("email", "String", email),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -340,27 +348,27 @@
         public Func<Action<CustomerBuilder>, UsersQueryBuilder> Customers()
         {
             IncludingField("customers");
-            return a =>
+            return __ =>
             {
-                var type = new CustomerBuilder();
-                a(type);
+                var _ = new CustomerBuilder();
+                __(_);
                 IncludeField(
                     "customers",
                     new List<Argument>(0),
-                    type);
+                    _);
                 return this;
             };
         }
 
         public Func<Action<UserInterfaceBuilder>, UsersQueryBuilder> User(
             string id,
-            UserTypeDto type = null)
+            UserType? type = null)
         {
             IncludingField("user");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "user",
                     new List<Argument>
@@ -368,26 +376,26 @@
                         new Argument("id", "ID!", id),
                         new Argument("type", "UserType", type),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
 
         public Func<Action<UserInterfaceBuilder>, UsersQueryBuilder> Users(
-            UserTypeDto type = null)
+            UserType? type = null)
         {
             IncludingField("users");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "users",
                     new List<Argument>
                     {
                         new Argument("type", "UserType", type),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -417,17 +425,17 @@
             List<CustomerInputDto> customers = null)
         {
             IncludingField("createCustomers");
-            return a =>
+            return __ =>
             {
-                var type = new CustomerBuilder();
-                a(type);
+                var _ = new CustomerBuilder();
+                __(_);
                 IncludeField(
                     "createCustomers",
                     new List<Argument>
                     {
                         new Argument("customers", "[CustomerInput]", customers),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -436,17 +444,17 @@
             ManagerInputDto manager)
         {
             IncludingField("createManager");
-            return a =>
+            return __ =>
             {
-                var type = new ManagerBuilder();
-                a(type);
+                var _ = new ManagerBuilder();
+                __(_);
                 IncludeField(
                     "createManager",
                     new List<Argument>
                     {
                         new Argument("manager", "ManagerInput!", manager),
                     },
-                    type);
+                    _);
                 return this;
             };
         }
@@ -462,14 +470,14 @@
         public Func<Action<UserInterfaceBuilder>, UsersSubscriptionBuilder> AddUser()
         {
             IncludingField("addUser");
-            return a =>
+            return __ =>
             {
-                var type = new UserInterfaceBuilder();
-                a(type);
+                var _ = new UserInterfaceBuilder();
+                __(_);
                 IncludeField(
                     "addUser",
                     new List<Argument>(0),
-                    type);
+                    _);
                 return this;
             };
         }
@@ -489,8 +497,8 @@
 
     public class AppClientFactory : ClientFactoryBase, IAppClientFactory
     {
-        public AppClientFactory(string url)
-            : base(url)
+        public AppClientFactory(string url, JsonSerializerSettings jsonSerializerSettings = null)
+            : base(url, jsonSerializerSettings)
         {
         }
 
@@ -530,6 +538,8 @@ namespace GraphQlClient.Infra
     using GraphQL.Client.Http;
     using GraphQL.Common.Request;
     using GraphQL.Common.Response;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
 
 
@@ -716,14 +726,32 @@ namespace GraphQlClient.Infra
 
     public abstract class GraphQlClientBase : IDisposable
     {
+        private static readonly JsonSerializerSettings DefaultJsonSerializerSettings;
+
+
         protected GraphQLHttpClient Client { get; }
 
         protected GraphQLRequest Request { get; }
 
 
-        protected GraphQlClientBase(string url, string query, Dictionary<string, object> variables)
+        static GraphQlClientBase()
         {
-            Client = new GraphQLHttpClient(url);
+            DefaultJsonSerializerSettings = new JsonSerializerSettings();
+            DefaultJsonSerializerSettings.Converters.Add(new StringEnumConverter());
+        }
+
+
+        protected GraphQlClientBase(
+            string url,
+            string query,
+            Dictionary<string, object> variables,
+            JsonSerializerSettings jsonSerializerSettings = null)
+        {
+            Client = new GraphQLHttpClient(new GraphQLHttpClientOptions
+            {
+                EndPoint = new Uri(url),
+                JsonSerializerSettings = jsonSerializerSettings ?? DefaultJsonSerializerSettings,
+            });
             Request = new GraphQLRequest
             {
                 Query = query,
@@ -740,8 +768,12 @@ namespace GraphQlClient.Infra
 
     public class GraphQlQueryClient<TDto> : GraphQlClientBase, IGraphQlQueryClient<TDto>
     {
-        public GraphQlQueryClient(string url, string query, Dictionary<string, object> variables)
-            : base(url, query, variables)
+        public GraphQlQueryClient(
+            string url,
+            string query,
+            Dictionary<string, object> variables,
+            JsonSerializerSettings jsonSerializerSettings = null)
+            : base(url, query, variables, jsonSerializerSettings)
         {
         }
 
@@ -762,8 +794,12 @@ namespace GraphQlClient.Infra
 
     public class GraphQlMutationClient<TDto> : GraphQlClientBase, IGraphQlMutationClient<TDto>
     {
-        public GraphQlMutationClient(string url, string query, Dictionary<string, object> variables)
-            : base(url, query, variables)
+        public GraphQlMutationClient(
+            string url,
+            string query,
+            Dictionary<string, object> variables,
+            JsonSerializerSettings jsonSerializerSettings = null)
+            : base(url, query, variables, jsonSerializerSettings)
         {
         }
 
@@ -784,8 +820,12 @@ namespace GraphQlClient.Infra
 
     public class GraphQlSubscriptionClient<TDto> : GraphQlClientBase, IGraphQlSubscriptionClient<TDto>
     {
-        public GraphQlSubscriptionClient(string url, string query, Dictionary<string, object> variables)
-            : base(url, query, variables)
+        public GraphQlSubscriptionClient(
+            string url,
+            string query,
+            Dictionary<string, object> variables,
+            JsonSerializerSettings jsonSerializerSettings = null)
+            : base(url, query, variables, jsonSerializerSettings)
         {
         }
 
@@ -806,30 +846,32 @@ namespace GraphQlClient.Infra
     public abstract class ClientFactoryBase
     {
         private readonly string _url;
+        private readonly JsonSerializerSettings _jsonSerializerSettings;
 
 
-        protected ClientFactoryBase(string url)
+        protected ClientFactoryBase(string url, JsonSerializerSettings jsonSerializerSettings = null)
         {
             _url = url;
+            _jsonSerializerSettings = jsonSerializerSettings;
         }
 
 
         protected IGraphQlQueryClient<TDto> CreateQueryClient<TDto>(TypeBase type)
         {
             var (requestQuery, variables) = PrepareRequestData("query", type);
-            return new GraphQlQueryClient<TDto>(_url, requestQuery, variables);
+            return new GraphQlQueryClient<TDto>(_url, requestQuery, variables, _jsonSerializerSettings);
         }
 
         protected IGraphQlMutationClient<TDto> CreateMutationClient<TDto>(TypeBase type)
         {
             var (requestQuery, variables) = PrepareRequestData("mutation", type);
-            return new GraphQlMutationClient<TDto>(_url, requestQuery, variables);
+            return new GraphQlMutationClient<TDto>(_url, requestQuery, variables, _jsonSerializerSettings);
         }
 
         protected IGraphQlSubscriptionClient<TDto> CreateSubscriptionClient<TDto>(TypeBase type)
         {
             var (requestQuery, variables) = PrepareRequestData("subscription", type);
-            return new GraphQlSubscriptionClient<TDto>(_url, requestQuery, variables);
+            return new GraphQlSubscriptionClient<TDto>(_url, requestQuery, variables, _jsonSerializerSettings);
         }
 
 

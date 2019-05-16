@@ -16,27 +16,9 @@ namespace GQL.Client
 
             var client = clientFactory
                 .CreateQueryClient(q => q
-                    .User("f8dc429d-17e2-4917-89d6-227127376bc0")(u => u
-                        .Friends()(f => f
-                            .Id()
-                            .OnCustomer(c => c
-                                .IsActive()))
-                        .OnCustomer(c => c
-                            .IsActive()))
-                    .Users()(u => u
-                        .Id()
+                    .Users(UserType.BadGuy)(u => u
                         .Name()
-                        .Friends()(f => f
-                            .Id()
-                            .OnCustomer(c => c
-                                .IsActive()))
-                        .OnCustomer(c => c
-                            .IsActive())
-                        .OnManager(m => m
-                            .NumberOfSales()))
-                    .Customers()(c => c
-                        .Name()
-                        .IsActive()));
+                        .Type()));
 
             var response = await client.SendAsync();
 
