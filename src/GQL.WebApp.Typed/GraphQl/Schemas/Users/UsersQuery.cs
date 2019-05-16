@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
@@ -26,11 +27,22 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                     {
                         Name = "id",
                         Description = "User identificator",
+                    },
+                    new QueryArgument<UserTypeEnum>
+                    {
+                        Name = "type",
+                        Description = "User type",
                     }),
                 resolve: ResolveUserAsync);
 
             FieldAsync<ListGraphType<UserInterface>>(
                 "users",
+                arguments: new QueryArguments(
+                    new QueryArgument<UserTypeEnum>
+                    {
+                        Name = "type",
+                        Description = "GoodGuy, BadGuy, Nobody are allowed",
+                    }),
                 resolve: ResolveUsersAsync);
 
             FieldAsync<IntGraphType>(
@@ -38,7 +50,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType>
                     {
-                        Name = "type",
+                        Name = "position",
                         Description = "Can be 'c' for customer or 'm' for manager.",
                     }),
                 resolve: ResolveUsersCountAsync);
@@ -105,6 +117,12 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
             if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Friends), out _))
             {
                 resultQuery = resultQuery.Include(u => u.Friends).ThenInclude(r => r.Friend);
+            }
+
+            if (context.Arguments.TryGetValue(nameof(UserModelBase.Type).ToLower(), out var type)
+                && Enum.TryParse<UserType>(type.ToString(), true, out var typeEnum))
+            {
+                resultQuery = resultQuery.Where(u => u.Type == typeEnum);
             }
 
             return resultQuery;

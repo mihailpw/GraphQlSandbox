@@ -13,8 +13,13 @@
         public string Id { get; set; }
         public string Name { get; set; }
         public List<string> Roles { get; set; }
+        public UserTypeDto Type { get; set; }
         public bool? IsActive { get; set; }
         public int? NumberOfSales { get; set; }
+    }
+
+    public class UserTypeDto
+    {
     }
 
     public class CustomerDto
@@ -25,6 +30,7 @@
         public bool? IsActive { get; set; }
         public string Name { get; set; }
         public List<string> Roles { get; set; }
+        public UserTypeDto Type { get; set; }
     }
 
     public class ManagerDto
@@ -35,6 +41,7 @@
         public string Name { get; set; }
         public int? NumberOfSales { get; set; }
         public List<string> Roles { get; set; }
+        public UserTypeDto Type { get; set; }
     }
 
     public class ManagerInputDto
@@ -135,6 +142,15 @@
             return this;
         }
 
+        public UserInterfaceBuilder Type()
+        {
+            IncludeField(
+                "type",
+                new List<Argument>(0),
+                null);
+            return this;
+        }
+
         public UserInterfaceBuilder OnCustomer(Action<CustomerBuilder> setupAction)
         {
             var type = new CustomerBuilder();
@@ -222,6 +238,15 @@
                 null);
             return this;
         }
+
+        public CustomerBuilder Type()
+        {
+            IncludeField(
+                "type",
+                new List<Argument>(0),
+                null);
+            return this;
+        }
     }
 
     public class ManagerBuilder : TypeBase
@@ -294,6 +319,15 @@
                 null);
             return this;
         }
+
+        public ManagerBuilder Type()
+        {
+            IncludeField(
+                "type",
+                new List<Argument>(0),
+                null);
+            return this;
+        }
     }
 
     public class UsersQueryBuilder : TypeBase
@@ -319,7 +353,8 @@
         }
 
         public Func<Action<UserInterfaceBuilder>, UsersQueryBuilder> User(
-            string id)
+            string id,
+            UserTypeDto type = null)
         {
             IncludingField("user");
             return a =>
@@ -331,13 +366,15 @@
                     new List<Argument>
                     {
                         new Argument("id", "ID!", id),
+                        new Argument("type", "UserType", type),
                     },
                     type);
                 return this;
             };
         }
 
-        public Func<Action<UserInterfaceBuilder>, UsersQueryBuilder> Users()
+        public Func<Action<UserInterfaceBuilder>, UsersQueryBuilder> Users(
+            UserTypeDto type = null)
         {
             IncludingField("users");
             return a =>
@@ -346,20 +383,23 @@
                 a(type);
                 IncludeField(
                     "users",
-                    new List<Argument>(0),
+                    new List<Argument>
+                    {
+                        new Argument("type", "UserType", type),
+                    },
                     type);
                 return this;
             };
         }
 
         public UsersQueryBuilder UsersCount(
-            string type = null)
+            string position = null)
         {
             IncludeField(
                 "usersCount",
                 new List<Argument>
                 {
-                    new Argument("type", "String", type),
+                    new Argument("position", "String", position),
                 },
                 null);
             return this;

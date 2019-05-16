@@ -8,6 +8,8 @@ namespace GQL.DAL.Models
 
         public string Email { get; set; }
 
+        public UserType Type { get; set; }
+
         public ICollection<UserRoleModel> Roles { get; set; }
 
         public ICollection<UserFriendModel> Friends { get; set; }

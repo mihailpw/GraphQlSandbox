@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using GQL.DAL.Models;
+﻿using GQL.DAL.Models;
 using GraphQL.Types;
 
 namespace GQL.WebApp.Typed.GraphQl.Models
@@ -20,6 +19,9 @@ namespace GQL.WebApp.Typed.GraphQl.Models
                 description: "User friends",
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "email" }));
+            Field<UserTypeEnum>(
+                name: nameof(UserModelBase.Type),
+                description: "The type of user");
         }
     }
 }

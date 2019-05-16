@@ -9,8 +9,6 @@ namespace GQL.WebApp.Typed.GraphQl.Models
     {
         protected UserTypeBase()
         {
-            Name = "UserInterface";
-
             Field(x => x.Name).Description("User name");
             Field(x => x.Email).Description("User email");
             Field<ListGraphType<StringGraphType>>(
@@ -23,6 +21,10 @@ namespace GQL.WebApp.Typed.GraphQl.Models
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> {Name = "email"}),
                 resolve: ResolveFriends);
+            Field<UserTypeEnum>(
+                name: nameof(UserModelBase.Type),
+                description: "The type of user",
+                resolve: c => c.Source.Type);
         }
 
         private static object ResolveFriends(ResolveFieldContext<TUser> context)

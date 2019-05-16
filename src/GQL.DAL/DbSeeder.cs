@@ -16,24 +16,28 @@ namespace GQL.DAL
                 Name = "Admin-01",
                 Email = "admin-01@user.us",
                 NumberOfSales = 1,
+                Type = UserType.Nobody,
             };
             var user1User = new CustomerUserModel
             {
                 Name = "User-01",
                 Email = "user-01@user.us",
                 IsActive = true,
+                Type = UserType.GoodGuy,
             };
             var user2User = new CustomerUserModel
             {
                 Name = "User-02",
                 Email = "user-02@user.us",
                 IsActive = true,
+                Type = UserType.BadGuy,
             };
             var user3User = new CustomerUserModel
             {
                 Name = "User-03",
                 Email = "user-03@user.us",
                 IsActive = true,
+                Type = UserType.BadGuy,
             };
 
             dbContext.AddRange(
