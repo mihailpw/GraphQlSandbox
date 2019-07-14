@@ -51,8 +51,8 @@ namespace GQL.WebApp.Serviced.GraphQl.Schemas.Users
         [GraphQlField("user")]
         public async Task<GqlUserType> GetUserAsync(
             ResolveFieldContext context,
-            [GraphQlParameter, GraphQlId] string id,
-            [GraphQlParameter] UserType? userType)
+            [GraphQlParameter, GraphQlId] string id = "ss",
+            [GraphQlParameter] UserType? userType = UserType.GoodGuy)
         {
             return null;
         }

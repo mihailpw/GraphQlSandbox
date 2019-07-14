@@ -8,14 +8,14 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
 {
     public class PropertyFieldResolver : IFieldResolver
     {
-        private readonly Type _type;
+        private readonly Type _targetType;
         private readonly PropertyInfo _propertyInfo;
         private readonly IProvider _provider;
 
 
-        public PropertyFieldResolver(Type type, PropertyInfo propertyInfo, IProvider provider)
+        public PropertyFieldResolver(Type targetType, PropertyInfo propertyInfo, IProvider provider)
         {
-            _type = type;
+            _targetType = targetType;
             _propertyInfo = propertyInfo;
             _provider = provider;
         }
@@ -23,7 +23,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
 
         public object Resolve(ResolveFieldContext context)
         {
-            return _propertyInfo.GetMethod.Invoke(_provider.Get(_type), new object[0]);
+            return _propertyInfo.GetMethod.Invoke(_provider.Get(_targetType), new object[0]);
         }
     }
 }

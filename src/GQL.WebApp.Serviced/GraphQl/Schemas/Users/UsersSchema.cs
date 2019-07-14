@@ -10,12 +10,13 @@ namespace GQL.WebApp.Serviced.GraphQl.Schemas.Users
         public UsersSchema(IProvider provider, UsersQuery query, UsersMutation mutation, UsersSubscription subscription)
         {
             //Query = query;
-            Query = new ObjectGraphTypeFactory(provider).Create(typeof(GqlUsersQueryType)) as IObjectGraphType;
-            Mutation = mutation;
-            Subscription = subscription;
+            var res = new ObjectGraphTypeFactory(provider).Create(typeof(GqlUsersQueryType));
+            Query = res as IObjectGraphType;
+            //Mutation = mutation;
+            //Subscription = subscription;
 
-            RegisterType<CustomerUserType>();
-            RegisterType<ManagerUserType>();
+            //RegisterType<CustomerUserType>();
+            //RegisterType<ManagerUserType>();
         }
     }
 }

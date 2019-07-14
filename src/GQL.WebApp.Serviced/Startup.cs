@@ -42,6 +42,9 @@ namespace GQL.WebApp.Serviced
 
             services.AddScoped<IDocumentExecuter, DocumentExecuter>();
 
+            services.AddScoped<GqlUsersQueryType>();
+            services.AddScoped<GqlUserType>();
+
             services.AddSingleton<UsersSchema>();
             services.AddSingleton<UsersQuery>();
             services.AddSingleton<UsersMutation>();

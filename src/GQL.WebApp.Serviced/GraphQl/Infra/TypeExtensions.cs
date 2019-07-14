@@ -15,13 +15,13 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
 
         public static bool CheckIfNullable(this Type type)
         {
-            return type.IsGenericTypeDefinition && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
         public static bool CheckIfTask(this Type type)
         {
             return type == typeof(Task)
-                   || type.IsGenericTypeDefinition
+                   || type.IsGenericType
                    && type.GetGenericTypeDefinition() == typeof(Task<>);
         }
 

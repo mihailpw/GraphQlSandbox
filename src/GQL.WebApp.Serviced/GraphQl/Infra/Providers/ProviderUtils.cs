@@ -32,6 +32,11 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Providers
             return memberInfo.FindInAttributes<IDescriptionProvider>()?.Description;
         }
 
+        public static string GetDescription(ParameterInfo parameterInfo)
+        {
+            return parameterInfo.FindInAttributes<IDescriptionProvider>()?.Description;
+        }
+
         public static string GetDeprecationReason(MemberInfo memberInfo)
         {
             return memberInfo.FindInAttributes<IDeprecationReasonProvider>()?.DeprecationReason;

@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using GQL.WebApp.Serviced.GraphQl.Infra.Providers;
 using GQL.WebApp.Serviced.GraphQl.Infra.Resolvers;
 using GQL.WebApp.Serviced.GraphQl.Infra.Types;
 using GQL.WebApp.Serviced.Infra;
 using GraphQL;
-using GraphQL.Resolvers;
 using GraphQL.Types;
 using GraphQL.Utilities;
 
@@ -16,28 +14,29 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
 {
     public class ObjectGraphTypeFactory
     {
-        private static readonly Dictionary<Type, Func<IGraphType>> ScalarGraphTypeFactories = new Dictionary<Type, Func<IGraphType>>
+        private static readonly Dictionary<Type, IGraphType> ScalarGraphTypeFactories = new Dictionary<Type, IGraphType>
         {
-            [typeof(bool)] = () => new BooleanGraphType(),
-            [typeof(byte)] = () => new ByteGraphType(),
-            [typeof(DateTime)] = () => new DateTimeGraphType(),
-            [typeof(DateTimeOffset)] = () => new DateTimeOffsetGraphType(),
-            [typeof(decimal)] = () => new DecimalGraphType(),
-            [typeof(float)] = () => new FloatGraphType(),
-            [typeof(Guid)] = () => new GuidGraphType(),
-            [typeof(long)] = () => new LongGraphType(),
-            [typeof(int)] = () => new IntGraphType(),
-            [typeof(sbyte)] = () => new SByteGraphType(),
-            [typeof(short)] = () => new ShortGraphType(),
-            [typeof(string)] = () => new StringGraphType(),
-            [typeof(TimeSpan)] = () => new TimeSpanMillisecondsGraphType(),
-            [typeof(uint)] = () => new UIntGraphType(),
-            [typeof(ulong)] = () => new ULongGraphType(),
-            [typeof(ushort)] = () => new UShortGraphType(),
-            [typeof(Uri)] = () => new UriGraphType(),
+            [typeof(bool)] = new BooleanGraphType(),
+            [typeof(byte)] = new ByteGraphType(),
+            [typeof(DateTime)] = new DateTimeGraphType(),
+            [typeof(DateTimeOffset)] = new DateTimeOffsetGraphType(),
+            [typeof(decimal)] = new DecimalGraphType(),
+            [typeof(float)] = new FloatGraphType(),
+            [typeof(Guid)] = new GuidGraphType(),
+            [typeof(long)] = new LongGraphType(),
+            [typeof(int)] = new IntGraphType(),
+            [typeof(sbyte)] = new SByteGraphType(),
+            [typeof(short)] = new ShortGraphType(),
+            [typeof(string)] = new StringGraphType(),
+            [typeof(TimeSpan)] = new TimeSpanMillisecondsGraphType(),
+            [typeof(uint)] = new UIntGraphType(),
+            [typeof(ulong)] = new ULongGraphType(),
+            [typeof(ushort)] = new UShortGraphType(),
+            [typeof(Uri)] = new UriGraphType(),
         };
 
         private readonly IProvider _provider;
+        private readonly Dictionary<Type, IGraphType> _createdTypesStorage = new Dictionary<Type, IGraphType>();
 
 
         public ObjectGraphTypeFactory(IProvider provider)
@@ -46,39 +45,50 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
         }
 
 
-        public IGraphType Create(Type type, bool nullable = false)
+        public IGraphType Create(Type type)
         {
             var processingType = type.UnwrapTypeFromTask();
 
-            IGraphType result;
-
-            if (ScalarGraphTypeFactories.TryGetValue(processingType, out var factory))
+            var nullable = !processingType.IsValueType;
+            if (processingType.CheckIfNullable())
             {
-                result = factory();
-            }
-            else if (processingType.IsEnum)
-            {
-                result = CreateEnumGraphType(processingType);
-            }
-            else if (processingType.IsArray)
-            {
-                result = new ListGraphType(Create(processingType.GetElementType(), nullable));
-            }
-            else if (processingType.CheckIfEnumerable())
-            {
-                result = new ListGraphType(Create(processingType.GetEnumerableElementType(), nullable));
-            }
-            else if (processingType.CheckIfNullable())
-            {
-                result = Create(processingType.GenericTypeArguments[0], nullable: true);
-            }
-            else
-            {
-                result = CreateObject(processingType);
-                // throw new NotSupportedException($"Type '{processingType.Name}' can not be presented as {nameof(IGraphType)}");
+                nullable = true;
+                processingType = processingType.GenericTypeArguments[0];
             }
 
-            Populate(result, processingType);
+            if (!_createdTypesStorage.TryGetValue(processingType, out var result))
+            {
+                if (ScalarGraphTypeFactories.TryGetValue(processingType, out var scalarGraphType))
+                {
+                    result = scalarGraphType;
+                }
+                else if (processingType.IsEnum)
+                {
+                    result = CreateEnumGraphType(processingType);
+                }
+                else if (processingType.IsArray)
+                {
+                    result = new ListGraphType(Create(processingType.GetElementType()));
+                }
+                else if (processingType.CheckIfEnumerable())
+                {
+                    result = new ListGraphType(Create(processingType.GetEnumerableElementType()));
+                }
+                else
+                {
+                    result = CreateObject(processingType);
+                    // throw new NotSupportedException($"Type '{processingType.Name}' can not be presented as {nameof(IGraphType)}");
+                }
+
+                result.Name = ProviderUtils.GetName(processingType);
+                result.Description = ProviderUtils.GetDescription(processingType);
+                result.DeprecationReason = ProviderUtils.GetDeprecationReason(processingType);
+
+                if (!processingType.CheckIfNullable())
+                {
+                    _createdTypesStorage.Add(type, result);
+                }
+            }
 
             if (!nullable)
             {
@@ -127,7 +137,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
                 result.AddField(CreateFieldType(type, propertyInfo));
             }
 
-            foreach (var methodInfo in type.GetMethods().Where(mi => !mi.IsSpecialName))
+            foreach (var methodInfo in type.GetMethods().Where(mi => !mi.IsSpecialName && mi.DeclaringType != typeof(object)))
             {
                 result.AddField(CreateFieldType(type, methodInfo));
             }
@@ -137,7 +147,11 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
 
         private FieldType CreateFieldType(Type type, PropertyInfo propertyInfo)
         {
-            var fieldType = Populate(new FieldType(), propertyInfo);
+            var fieldType = new FieldType();
+            fieldType.Name = ProviderUtils.GetName(propertyInfo);
+            fieldType.Description = ProviderUtils.GetDescription(propertyInfo);
+            fieldType.DeprecationReason = ProviderUtils.GetDeprecationReason(propertyInfo);
+
             if (ProviderUtils.TryGetType(propertyInfo, out var propertyType))
             {
                 fieldType.Type = propertyType;
@@ -154,7 +168,10 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
 
         private FieldType CreateFieldType(Type type, MethodInfo methodInfo)
         {
-            var graphFieldType = Populate(new FieldType(), methodInfo);
+            var graphFieldType = new FieldType();
+            graphFieldType.Name = ProviderUtils.GetName(methodInfo);
+            graphFieldType.Description = ProviderUtils.GetDescription(methodInfo);
+            graphFieldType.DeprecationReason = ProviderUtils.GetDeprecationReason(methodInfo);
 
             if (ProviderUtils.TryGetType(methodInfo, out var propertyType))
             {
@@ -165,16 +182,10 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
                 graphFieldType.ResolvedType = Create(methodInfo.ReturnType);
             }
 
+            graphFieldType.Arguments = new QueryArguments();
             foreach (var parameterInfo in methodInfo.GetParameters().Where(pi => pi.ParameterType != typeof(ResolveFieldContext)))
             {
-                var paramGraphType = Create(parameterInfo.ParameterType);
-                var queryArgument = Populate(new QueryArgument(paramGraphType), methodInfo);
-                queryArgument.DefaultValue = parameterInfo.DefaultValue;
-                if (graphFieldType.Arguments == null)
-                {
-                    graphFieldType.Arguments = new QueryArguments();
-                }
-                graphFieldType.Arguments.Add(queryArgument);
+                graphFieldType.Arguments.Add(CreateQueryArgument(type, methodInfo, parameterInfo));
             }
 
             graphFieldType.Resolver = new MethodFieldResolver(type, methodInfo, _provider);
@@ -182,33 +193,18 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
             return graphFieldType;
         }
 
-        private static TType Populate<TType>(TType graphInstance, MemberInfo memberInfo)
+        private QueryArgument CreateQueryArgument(Type type, MethodInfo methodInfo, ParameterInfo parameterInfo)
         {
-            if (graphInstance is IFieldType fieldType)
+            var paramGraphType = Create(parameterInfo.ParameterType);
+            var queryArgument = new QueryArgument(paramGraphType);
+            queryArgument.Name = ProviderUtils.GetName(parameterInfo);
+            queryArgument.Description = ProviderUtils.GetDescription(parameterInfo);
+            if (parameterInfo.HasDefaultValue)
             {
-                fieldType.Name = ProviderUtils.GetName(memberInfo);
-                fieldType.Description = ProviderUtils.GetDescription(memberInfo);
-                fieldType.DeprecationReason = ProviderUtils.GetDeprecationReason(memberInfo);
+                queryArgument.DefaultValue = parameterInfo.DefaultValue;
             }
 
-            if (graphInstance is INamedType namedType)
-            {
-                namedType.Name = ProviderUtils.GetName(memberInfo);
-            }
-
-            if (graphInstance is IGraphType graphType)
-            {
-                graphType.Description = ProviderUtils.GetDescription(memberInfo);
-                graphType.DeprecationReason = ProviderUtils.GetDeprecationReason(memberInfo);
-            }
-
-            if (graphInstance is QueryArgument queryArgument)
-            {
-                queryArgument.Name = ProviderUtils.GetName(memberInfo);
-                queryArgument.Description = ProviderUtils.GetDescription(memberInfo);
-            }
-
-            return graphInstance;
+            return queryArgument;
         }
     }
 }
