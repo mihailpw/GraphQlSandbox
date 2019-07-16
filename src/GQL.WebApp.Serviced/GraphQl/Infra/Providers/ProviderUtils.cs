@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using GraphQL;
 
 namespace GQL.WebApp.Serviced.GraphQl.Infra.Providers
 {
@@ -19,7 +20,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Providers
 
         public static string GetName(MemberInfo memberInfo)
         {
-            return memberInfo.FindInAttributes<INameProvider>()?.Name ?? memberInfo.Name;
+            return memberInfo.FindInAttributes<INameProvider>()?.Name ?? memberInfo.Name.ToCamelCase();
         }
 
         public static string GetName(ParameterInfo parameterInfo)

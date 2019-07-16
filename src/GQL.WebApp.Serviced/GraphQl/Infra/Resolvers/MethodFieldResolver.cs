@@ -42,7 +42,9 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
                 }
                 else
                 {
-                    yield return context.Arguments.GetValueOrDefault(ProviderUtils.GetName(parameterInfo));
+                    var value = context.Arguments.GetValueOrDefault(ProviderUtils.GetName(parameterInfo));
+                    var convertedValue = ConvertUtils.ChangeTypeTo(value, parameterInfo.ParameterType);
+                    yield return convertedValue;
                 }
             }
         }

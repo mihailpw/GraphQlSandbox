@@ -54,7 +54,13 @@ namespace GQL.WebApp.Serviced.GraphQl.Schemas.Users
             [GraphQlParameter, GraphQlId] string id = "ss",
             [GraphQlParameter] UserType? userType = UserType.GoodGuy)
         {
-            return null;
+            return new GqlUserType
+            {
+                Id = "id__",
+                Email = "email__",
+                Name = "name__",
+                Type = UserType.Nobody,
+            };
         }
 
         [GraphQlField("users")]
