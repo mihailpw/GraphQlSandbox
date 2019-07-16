@@ -36,9 +36,24 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
         {
             foreach (var parameterInfo in _methodInfo.GetParameters())
             {
-                if (parameterInfo.ParameterType == typeof(ResolveFieldContext))
+                if (parameterInfo.ParameterType.CheckIfResolveFieldContextType())
                 {
-                    yield return context;
+                    if (parameterInfo.ParameterType.IsGenericType)
+                    {
+                        var contextSourceType = parameterInfo.ParameterType.GenericTypeArguments[0];
+                        if (parameterInfo.ParameterType.CheckIfResolveFieldContextType(_targetType))
+                        {
+                            yield return ConvertUtils.ChangeResolveFieldContextTypeTo(context, contextSourceType);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_targetType.Name} type.");
+                        }
+                    }
+                    else
+                    {
+                        yield return context;
+                    }
                 }
                 else
                 {

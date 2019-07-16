@@ -183,7 +183,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
             }
 
             graphFieldType.Arguments = new QueryArguments();
-            foreach (var parameterInfo in methodInfo.GetParameters().Where(pi => pi.ParameterType != typeof(ResolveFieldContext)))
+            foreach (var parameterInfo in methodInfo.GetParameters().Where(pi => !pi.ParameterType.CheckIfResolveFieldContextType()))
             {
                 graphFieldType.Arguments.Add(CreateQueryArgument(type, methodInfo, parameterInfo));
             }

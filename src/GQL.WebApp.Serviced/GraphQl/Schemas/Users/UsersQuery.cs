@@ -31,14 +31,14 @@ namespace GQL.WebApp.Serviced.GraphQl.Schemas.Users
 
         [GraphQlField("roles")]
         public IEnumerable<string> GetRoles(
-            ResolveFieldContext context)
+            ResolveFieldContext<GqlUserType> context)
         {
             return null;
         }
 
         [GraphQlField("friends")]
         public IEnumerable<string> GetFriends(
-            ResolveFieldContext context,
+            ResolveFieldContext<GqlUserType> context,
             [GraphQlParameter] string email = null)
         {
             return null;

@@ -25,22 +25,27 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Providers
 
         public static string GetName(ParameterInfo parameterInfo)
         {
-            return parameterInfo.FindInAttributes<INameProvider>()?.Name ?? parameterInfo.Name;
+            return parameterInfo.FindInAttributes<INameProvider>()?.Name ?? parameterInfo.Name.ToCamelCase();
         }
 
-        public static string GetDescription(MemberInfo memberInfo)
+        public static Type GetReturnType(MethodInfo methodInfo)
         {
-            return memberInfo.FindInAttributes<IDescriptionProvider>()?.Description;
+            return methodInfo.FindInAttributes<IReturnTypeProvider>()?.ReturnType ?? methodInfo.ReturnType;
         }
 
-        public static string GetDescription(ParameterInfo parameterInfo)
+        public static Type GetReturnType(ParameterInfo parameterInfo)
         {
-            return parameterInfo.FindInAttributes<IDescriptionProvider>()?.Description;
+            return parameterInfo.FindInAttributes<IReturnTypeProvider>()?.ReturnType ?? parameterInfo.ParameterType;
         }
 
-        public static string GetDeprecationReason(MemberInfo memberInfo)
+        public static string GetDescription(ICustomAttributeProvider attributeProvider)
         {
-            return memberInfo.FindInAttributes<IDeprecationReasonProvider>()?.DeprecationReason;
+            return attributeProvider.FindInAttributes<IDescriptionProvider>()?.Description;
+        }
+
+        public static string GetDeprecationReason(ICustomAttributeProvider attributeProvider)
+        {
+            return attributeProvider.FindInAttributes<IDeprecationReasonProvider>()?.DeprecationReason;
         }
 
         private static T FindInAttributes<T>(this ICustomAttributeProvider attributeProvider)

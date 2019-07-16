@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQl.Infra
 {
@@ -25,10 +26,15 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
                 return new Guid(value.ToString());
             }
 
-            return underlyingType.IsInstanceOfType(value)
+            // ReSharper disable once UseMethodIsInstanceOfType
+            return underlyingType.IsAssignableFrom(value.GetType())
                 ? Convert.ChangeType(value, underlyingType)
                 : Convert.ChangeType(value.ToString(), underlyingType);
         }
 
+        public static object ChangeResolveFieldContextTypeTo(ResolveFieldContext context, Type sourceType)
+        {
+            return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(sourceType), context);
+        }
     }
 }

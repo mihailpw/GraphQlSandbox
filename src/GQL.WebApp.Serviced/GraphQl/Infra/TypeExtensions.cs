@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Threading.Tasks;
+using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQl.Infra
 {
@@ -45,11 +47,31 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
             }
         }
 
-        public static Type GetGenericTypeDefinitionSafe(this Type type)
+        public static bool CheckIfResolveFieldContextType(this Type type, params Type[] possibleTypes)
         {
-            return type.IsGenericTypeDefinition
-                ? type.GetGenericTypeDefinition()
-                : typeof(void);
+            if (type == typeof(ResolveFieldContext)
+                || type == typeof(ResolveFieldContext<object>))
+            {
+                return true;
+            }
+
+            if (type.IsGenericType)
+            {
+                var genericTypeDefinition = type.GetGenericTypeDefinition();
+                if (genericTypeDefinition == typeof(ResolveFieldContext<>))
+                {
+                    if (possibleTypes.Length == 0)
+                    {
+                        return true;
+                    }
+
+                    var typeArgument = type.GenericTypeArguments[0];
+                    return possibleTypes.Contains(typeArgument);
+
+                }
+            }
+
+            return false;
         }
     }
 }
