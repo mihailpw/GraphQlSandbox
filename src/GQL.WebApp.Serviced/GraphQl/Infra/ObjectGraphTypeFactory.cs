@@ -188,7 +188,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra
                 graphFieldType.Arguments.Add(CreateQueryArgument(type, methodInfo, parameterInfo));
             }
 
-            graphFieldType.Resolver = new MethodFieldResolver(type, methodInfo, _provider);
+            graphFieldType.Resolver = new MethodFieldResolver(type, type, type, methodInfo, _provider);
 
             return graphFieldType;
         }

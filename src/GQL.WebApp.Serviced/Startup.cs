@@ -1,7 +1,7 @@
-﻿using GQL.DAL;
-using GQL.WebApp.Serviced.GraphQl.Schemas.Users;
+﻿using System;
+using GQL.DAL;
+using GQL.WebApp.Serviced.GraphQlV2;
 using GQL.WebApp.Serviced.Infra;
-using GQL.WebApp.Serviced.Managers;
 using GraphQL;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
@@ -34,21 +34,15 @@ namespace GQL.WebApp.Serviced
             services.AddTransient(typeof(IProvider), typeof(Provider));
             services.AddTransient(typeof(IProvider<>), typeof(Provider<>));
 
-            services.AddSingleton<IUsersObservable, UsersObservable>();
-            services.AddScoped<IUsersManager, UsersManager>();
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
 
             services.AddScoped<IDocumentExecuter, DocumentExecuter>();
 
-            services.AddScoped<GqlUsersQueryType>();
-            services.AddScoped<GqlUserType>();
+            services.AddTransient<QueryRootService>();
+            services.AddTransient<IInnerService, InnerService>();
 
-            services.AddSingleton<UsersSchema>();
-            services.AddSingleton<UsersQuery>();
-            services.AddSingleton<UsersMutation>();
-            services.AddSingleton<UsersSubscription>();
+            services.AddSingleton<GraphQlSchema>();
 
             services
                 .AddGraphQL(o =>
@@ -59,7 +53,7 @@ namespace GQL.WebApp.Serviced
                 .AddWebSockets();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IServiceProvider provider)
         {
             if (_environment.IsDevelopment())
             {
@@ -72,8 +66,8 @@ namespace GQL.WebApp.Serviced
 
             app.UseWebSockets();
 
-            app.UseGraphQL<UsersSchema>();
-            app.UseGraphQLWebSockets<UsersSchema>();
+            app.UseGraphQL<GraphQlSchema>();
+            app.UseGraphQLWebSockets<GraphQlSchema>();
 
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions { GraphQLEndPoint = PathString.FromUriComponent("/graphql") });
 
@@ -82,6 +76,8 @@ namespace GQL.WebApp.Serviced
                 var dbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
                 DbSeeder.Seed(dbContext);
             }
+
+            ProviderContext.Instance = provider.GetService<IProvider>();
         }
     }
 }

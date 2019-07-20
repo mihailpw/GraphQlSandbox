@@ -4,6 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GQL.WebApp.Serviced.Infra
 {
+    public static class ProviderContext
+    {
+        public static IProvider Instance { get; set; }
+    }
+
     public interface IProvider
     {
         object Get(Type type);

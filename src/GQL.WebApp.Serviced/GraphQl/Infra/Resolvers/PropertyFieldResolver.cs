@@ -23,7 +23,10 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
 
         public object Resolve(ResolveFieldContext context)
         {
-            return _propertyInfo.GetMethod.Invoke(_provider.Get(_targetType), new object[0]);
+            var target = context.Source ?? _provider.Get(_targetType);
+            var value = _propertyInfo.GetValue(target);
+
+            return value;
         }
     }
 }

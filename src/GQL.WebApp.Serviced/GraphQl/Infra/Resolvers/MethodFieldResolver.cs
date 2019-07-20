@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GQL.WebApp.Serviced.GraphQl.Infra.Providers;
+using GQL.WebApp.Serviced.GraphQlV2.Infra;
 using GQL.WebApp.Serviced.Infra;
 using GraphQL.Resolvers;
 using GraphQL.Types;
@@ -11,14 +12,21 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
 {
     public class MethodFieldResolver : IFieldResolver
     {
-        private readonly Type _targetType;
+        private readonly Type _serviceType;
+        private readonly Type _returnType;
+        private readonly Type _returnRealType;
         private readonly MethodInfo _methodInfo;
         private readonly IProvider _provider;
 
+        private bool _isFirstCall = true;
+        private ObjectMapper _objectMapper;
 
-        public MethodFieldResolver(Type targetType, MethodInfo methodInfo, IProvider provider)
+
+        public MethodFieldResolver(Type serviceType, Type returnType, Type returnRealType, MethodInfo methodInfo, IProvider provider)
         {
-            _targetType = targetType;
+            _serviceType = serviceType;
+            _returnType = returnType;
+            _returnRealType = returnRealType;
             _methodInfo = methodInfo;
             _provider = provider;
         }
@@ -26,9 +34,30 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
 
         public object Resolve(ResolveFieldContext context)
         {
-            var target = _provider.Get(_targetType);
+            var service = context.Source ?? _provider.Get(_serviceType);
             var parameters = ProcessParameters(context).ToArray();
-            return _methodInfo.Invoke(target, parameters);
+            var result = _methodInfo.Invoke(service, parameters);
+
+            if (_isFirstCall)
+            {
+                var realResultType = _provider.Get(_returnRealType).GetType();
+                var resultType = result.GetType();
+                if (realResultType != resultType)
+                {
+                    _objectMapper = new ObjectMapper(realResultType, resultType);
+                }
+            }
+
+            if (_objectMapper == null)
+            {
+                return result;
+            }
+            else
+            {
+                var realResult = _provider.Get(_returnRealType);
+                _objectMapper.Populate(realResult, result);
+                return realResult;
+            }
         }
 
 
@@ -41,13 +70,13 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
                     if (parameterInfo.ParameterType.IsGenericType)
                     {
                         var contextSourceType = parameterInfo.ParameterType.GenericTypeArguments[0];
-                        if (parameterInfo.ParameterType.CheckIfResolveFieldContextType(_targetType))
+                        if (contextSourceType == _returnType)
                         {
                             yield return ConvertUtils.ChangeResolveFieldContextTypeTo(context, contextSourceType);
                         }
                         else
                         {
-                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_targetType.Name} type.");
+                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_returnType.Name} type.");
                         }
                     }
                     else
