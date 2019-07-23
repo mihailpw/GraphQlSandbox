@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using GQL.WebApp.Serviced.GraphQl.Infra.Providers;
-using GQL.WebApp.Serviced.GraphQlV2.Infra;
-using GQL.WebApp.Serviced.Infra;
+using GQL.Services.Infra.Core;
+using GQL.Services.Infra.FieldResolvers.Mapping;
+using GQL.Services.Infra.Helpers;
 using GraphQL.Resolvers;
 using GraphQL.Types;
 
-namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
+namespace GQL.Services.Infra.FieldResolvers
 {
     public class MethodFieldResolver : IFieldResolver
     {
@@ -18,8 +18,8 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
         private readonly MethodInfo _methodInfo;
         private readonly IProvider _provider;
 
-        private bool _isFirstCall = true;
-        private ObjectMapper _objectMapper;
+        private bool _isInitialized;
+        private IObjectMapper _objectMapper;
 
 
         public MethodFieldResolver(Type serviceType, Type returnType, Type returnRealType, MethodInfo methodInfo, IProvider provider)
@@ -38,15 +38,21 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
             var parameters = ProcessParameters(context).ToArray();
             var result = _methodInfo.Invoke(service, parameters);
 
-            if (_isFirstCall)
-            {
-                var realResultType = _provider.Get(_returnRealType).GetType();
-                var resultType = result.GetType();
-                if (realResultType != resultType)
-                {
-                    _objectMapper = new ObjectMapper(realResultType, resultType);
-                }
-            }
+            //if (!_isInitialized)
+            //{
+            //    var realResultType = _provider.Get(_returnRealType).GetType();
+            //    var resultType = result.GetType();
+            //    if (realResultType != resultType)
+            //    {
+            //        _objectMapper = new SingleObjectMapper(realResultType, resultType);
+            //        if (realResultType.IsEnumerable())
+            //        {
+            //            _objectMapper = new ManyObjectMapper(_objectMapper);
+            //        }
+            //    }
+
+            //    _isInitialized = true;
+            //}
 
             if (_objectMapper == null)
             {
@@ -65,7 +71,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
         {
             foreach (var parameterInfo in _methodInfo.GetParameters())
             {
-                if (parameterInfo.ParameterType.CheckIfResolveFieldContextType())
+                if (TypeUtils.ResolveFieldContext.IsInType(parameterInfo.ParameterType))
                 {
                     if (parameterInfo.ParameterType.IsGenericType)
                     {
@@ -86,7 +92,7 @@ namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
                 }
                 else
                 {
-                    var value = context.Arguments.GetValueOrDefault(ProviderUtils.GetName(parameterInfo));
+                    var value = context.Arguments.GetValueOrDefault(parameterInfo.GetNameOrDefault(parameterInfo.Name));
                     var convertedValue = ConvertUtils.ChangeTypeTo(value, parameterInfo.ParameterType);
                     yield return convertedValue;
                 }

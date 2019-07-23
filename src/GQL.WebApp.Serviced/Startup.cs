@@ -1,7 +1,8 @@
 ﻿using System;
 using GQL.DAL;
+using GQL.Services.Infra;
+using GQL.Services.Infra.Core;
 using GQL.WebApp.Serviced.GraphQlV2;
-using GQL.WebApp.Serviced.Infra;
 using GraphQL;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
@@ -11,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GQL.WebApp.Serviced
 {
@@ -30,30 +30,21 @@ namespace GQL.WebApp.Serviced
         {
             var isDev = _environment.IsDevelopment();
 
-            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient(typeof(IProvider), typeof(Provider));
-            services.AddTransient(typeof(IProvider<>), typeof(Provider<>));
+            services.AddHttpContextAccessor();
+
+            services.AddGraphQl<GraphQlSchema>(c => c
+                .RegisterObject<QueryRootService>()
+                .RegisterObject<IInnerService, InnerService>());
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
 
-            services.AddScoped<IDocumentExecuter, DocumentExecuter>();
-
-            services.AddTransient<QueryRootService>();
-            services.AddTransient<IInnerService, InnerService>();
-
-            services.AddSingleton<GraphQlSchema>();
-
             services
-                .AddGraphQL(o =>
-                {
-                    o.EnableMetrics = isDev;
-                    o.ExposeExceptions = isDev;
-                })
+                .AddGraphQL(o => o.EnableMetrics = o.ExposeExceptions = isDev)
                 .AddWebSockets();
         }
 
-        public void Configure(IApplicationBuilder app, IServiceProvider provider)
+        public void Configure(IApplicationBuilder app)
         {
             if (_environment.IsDevelopment())
             {
@@ -63,6 +54,8 @@ namespace GQL.WebApp.Serviced
             {
                 app.UseHsts();
             }
+
+            app.UseGraphQl();
 
             app.UseWebSockets();
 
@@ -76,8 +69,6 @@ namespace GQL.WebApp.Serviced
                 var dbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
                 DbSeeder.Seed(dbContext);
             }
-
-            ProviderContext.Instance = provider.GetService<IProvider>();
         }
     }
 }

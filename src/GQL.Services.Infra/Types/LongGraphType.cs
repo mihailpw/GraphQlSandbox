@@ -2,9 +2,9 @@
 using GraphQL.Language.AST;
 using GraphQL.Types;
 
-namespace GQL.WebApp.Serviced.GraphQl.Infra.Types
+namespace GQL.Services.Infra.Types
 {
-    public class LongGraphType : ScalarGraphType
+    internal class LongGraphType : ScalarGraphType
     {
         public override object ParseLiteral(IValue value)
         {

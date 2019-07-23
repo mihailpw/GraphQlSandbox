@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GQL.WebApp.Serviced.Infra
+namespace GQL.Services.Infra.Core
 {
     public static class ProviderContext
     {
@@ -15,17 +15,12 @@ namespace GQL.WebApp.Serviced.Infra
         T Get<T>();
     }
 
-    public interface IProvider<out T> : IProvider
-    {
-        T Get();
-    }
-
-    public class Provider : IProvider
+    internal class ScopedProvider : IProvider
     {
         private readonly IHttpContextAccessor _contextAccessor;
 
 
-        public Provider(IHttpContextAccessor contextAccessor)
+        public ScopedProvider(IHttpContextAccessor contextAccessor)
         {
             _contextAccessor = contextAccessor;
         }
@@ -39,19 +34,6 @@ namespace GQL.WebApp.Serviced.Infra
         public T Get<T>()
         {
             return _contextAccessor.HttpContext.RequestServices.GetService<T>();
-        }
-    }
-
-    public class Provider<T> : Provider, IProvider<T>
-    {
-        public Provider(IHttpContextAccessor contextAccessor)
-            : base(contextAccessor)
-        {
-        }
-
-        public T Get()
-        {
-            return Get<T>();
         }
     }
 }

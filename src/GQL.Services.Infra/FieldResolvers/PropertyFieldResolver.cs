@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Reflection;
-using GQL.WebApp.Serviced.Infra;
+using GQL.Services.Infra.Core;
 using GraphQL.Resolvers;
 using GraphQL.Types;
 
-namespace GQL.WebApp.Serviced.GraphQl.Infra.Resolvers
+namespace GQL.Services.Infra.FieldResolvers
 {
     public class PropertyFieldResolver : IFieldResolver
     {

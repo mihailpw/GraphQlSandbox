@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GQL.DAL\GQL.DAL.csproj" />
+    <ProjectReference Include="..\GQL.Services.Infra\GQL.Services.Infra.csproj" />
   </ItemGroup>
 
 </Project>

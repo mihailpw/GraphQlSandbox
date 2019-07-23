@@ -1,14 +1,12 @@
 ﻿using GQL.WebApp.Serviced.GraphQlV2;
 using GQL.WebApp.Serviced.GraphQlV2.Factories;
-using GQL.WebApp.Serviced.Infra;
 using GraphQL.Types;
-using GraphQL.Utilities;
 
 namespace GQL.WebApp.Serviced
 {
     public class GraphQlSchema : Schema
     {
-        public GraphQlSchema(IProvider provider)
+        public GraphQlSchema()
         {
             //var res = new ObjectGraphTypeFactory(provider).Create(typeof(GqlUsersQueryType));
             //Query = res as IObjectGraphType;

@@ -1,15 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
 using GQL.Services.Infra.Core;
 using GQL.Services.Infra.FieldResolvers;
-using GQL.WebApp.Serviced.GraphQlV2._;
-using GQL.WebApp.Serviced.GraphQlV2.Infra;
+using GQL.Services.Infra.Helpers;
 using GraphQL.Types;
-using GraphQlPartsFactory = GQL.WebApp.Serviced.GraphQlV2.Factories.GraphQlPartsFactory;
-using MethodFieldResolver = GQL.WebApp.Serviced.GraphQlV2._.MethodFieldResolver;
 
-namespace GQL.WebApp.Serviced.GraphQlV2
+namespace GQL.Services.Infra.Types
 {
     public sealed class AutoRegisteringObjectGraphType<TSourceType> : ObjectGraphType<TSourceType>
     {
@@ -20,28 +16,26 @@ namespace GQL.WebApp.Serviced.GraphQlV2
         {
             var serviceType = typeof(TSourceType);
 
-            Name = serviceType.Name;
-            Description = serviceType.FindInAttributes<DescriptionAttribute>()?.Description;
-            DeprecationReason = serviceType.FindInAttributes<ObsoleteAttribute>()?.Message;
+            Name = serviceType.GetNameOrDefault(serviceType.Name);
+            Description = serviceType.GetDescription();
+            DeprecationReason = serviceType.GetDeprecationReason();
 
             foreach (var propertyInfo in GraphQlUtils.GetRegisteredProperties(typeof(TSourceType)))
             {
                 AddField(_graphQlPartsFactory.CreateFieldType(
                     propertyInfo,
-                    new PropertyFieldResolver(typeof(TSourceType), propertyInfo, ProviderContext.Instance)));
-                //new PropertyFieldResolver(serviceType, propertyInfo, ProviderContext.Instance)));
+                    new PropertyFieldResolver(serviceType, propertyInfo, ProviderContext.Instance)));
             }
 
             foreach (var methodInfo in GraphQlUtils.GetRegisteredMethods(typeof(TSourceType)))
             {
-                var type = methodInfo.ResolveType(methodInfo.ReturnType);
+                var type = methodInfo.GetReturnTypeOrDefault(methodInfo.ReturnType);
                 var queryArguments = GraphQlUtils.GetAvailableParameters(methodInfo).Select(_graphQlPartsFactory.CreateQueryArgument);
 
                 AddField(_graphQlPartsFactory.CreateFieldType(
                     methodInfo,
                     queryArguments,
-                    new MethodFieldResolver(methodInfo, type, ProviderContext.Instance)));
-                //new MethodFieldResolver(typeof(TSourceType), methodInfo.ReturnType, type, methodInfo, ProviderContext.Instance)));
+                    new MethodFieldResolver(typeof(TSourceType), methodInfo.ReturnType, type, methodInfo, ProviderContext.Instance)));
             }
 
             if (!Fields.Any())

@@ -65,7 +65,9 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Infra
 
             return type.IsGenericType
                 ? type.GetGenericArguments()[0]
-                : typeof(object);
+                : type.IsArray
+                    ? type.GetElementType()
+                    : typeof(object);
         }
 
         public static Type UnwrapTaskType(this Type type)

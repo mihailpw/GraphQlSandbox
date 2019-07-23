@@ -1,16 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GQL.WebApp.Serviced.GraphQlV2
 {
     public class QueryRootService
     {
         [ReturnType(typeof(IInnerService))]
-        public object GetMany(int? id)
+        public InnerModel GetAsync(int? id)
         {
             return new InnerModel
             {
                 IntProperty = 22,
                 StringProperty = "344",
+            };
+        }
+
+        [ReturnType(typeof(IInnerService))]
+        public IEnumerable<InnerModel> GetMany(int? id)
+        {
+            yield return new InnerModel
+            {
+                IntProperty = 22,
+                StringProperty = "344",
+            };
+            yield return new InnerModel
+            {
+                IntProperty = 22322,
+                StringProperty = "34334",
             };
         }
     }
