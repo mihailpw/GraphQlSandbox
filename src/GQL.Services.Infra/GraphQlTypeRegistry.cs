@@ -37,9 +37,29 @@ namespace GQL.Services.Infra
         }
 
 
+        public bool IsRegistered(Type type)
+        {
+            return _typeToGraphQlTypeMap.ContainsKey(type);
+        }
+
+        public bool TryGetRegistered(Type type, out Type graphQlType)
+        {
+            return _typeToGraphQlTypeMap.TryGetValue(type, out graphQlType);
+        }
+
+        public void RegisterInputObject(Type type)
+        {
+            Register(type, typeof(AutoInputObjectGraphType<>).MakeGenericType(type));
+        }
+
         public void RegisterObject(Type type)
         {
-            Register(type, typeof(Types.AutoRegisteringObjectGraphType<>).MakeGenericType(type));
+            Register(type, typeof(AutoObjectGraphType<>).MakeGenericType(type));
+        }
+
+        public void RegisterInterface(Type type)
+        {
+            Register(type, typeof(AutoInterfaceGraphType<>).MakeGenericType(type));
         }
 
 
@@ -48,13 +68,9 @@ namespace GQL.Services.Infra
             if (_typeToGraphQlTypeMap.TryGetValue(key, out var existingValue))
             {
                 if (value == existingValue)
-                {
                     return;
-                }
-                else
-                {
-                    throw new ArgumentException($"Type {key.Name} already registered.");
-                }
+
+                throw new ArgumentException($"Type {key.Name} already registered.");
             }
 
             _typeToGraphQlTypeMap.Add(key, value);

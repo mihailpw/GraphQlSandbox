@@ -25,11 +25,16 @@ namespace GQL.Services.Infra
                 return this;
             }
 
-            public Options RegisterObject<TService, TImplementation>() where TService : class where TImplementation : class, TService
+            public Options RegisterObject<TInterface, TImplementation>() where TInterface : class where TImplementation : class, TInterface
             {
-                _services.AddTransient<TService, TImplementation>();
-                GraphQlTypeRegistry.Instance.RegisterObject(typeof(TService));
+                _services.AddTransient<TInterface, TImplementation>();
+                GraphQlTypeRegistry.Instance.RegisterObject(typeof(TInterface));
                 return this;
+            }
+
+            public void RegisterInputObject<T>()
+            {
+                GraphQlTypeRegistry.Instance.RegisterInputObject(typeof(T));
             }
         }
 

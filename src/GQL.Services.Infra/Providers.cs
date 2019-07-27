@@ -17,6 +17,11 @@ namespace GQL.Services.Infra
         string Description { get; }
     }
 
+    public interface IRequiredProvider
+    {
+        bool IsRequired { get; }
+    }
+
     public interface IDeprecationReasonProvider
     {
         string DeprecationReason { get; }

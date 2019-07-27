@@ -1,102 +1,39 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GQL.Services.Infra.Core;
-using GQL.Services.Infra.FieldResolvers.Mapping;
 using GQL.Services.Infra.Helpers;
 using GraphQL.Resolvers;
 using GraphQL.Types;
 
 namespace GQL.Services.Infra.FieldResolvers
 {
-    public class MethodFieldResolver : IFieldResolver
+    internal class MethodFieldResolver : IFieldResolver
     {
-        private readonly Type _serviceType;
-        private readonly Type _returnType;
-        private readonly Type _returnRealType;
-        private readonly MethodInfo _methodInfo;
+        private readonly MethodInfo _serviceMethod;
         private readonly IProvider _provider;
 
-        private bool _isInitialized;
-        private IObjectMapper _objectMapper;
 
-
-        public MethodFieldResolver(Type serviceType, Type returnType, Type returnRealType, MethodInfo methodInfo, IProvider provider)
+        public MethodFieldResolver(MethodInfo serviceMethod, IProvider provider)
         {
-            _serviceType = serviceType;
-            _returnType = returnType;
-            _returnRealType = returnRealType;
-            _methodInfo = methodInfo;
+            _serviceMethod = serviceMethod;
             _provider = provider;
         }
 
 
         public object Resolve(ResolveFieldContext context)
         {
-            var service = context.Source ?? _provider.Get(_serviceType);
-            var parameters = ProcessParameters(context).ToArray();
-            var result = _methodInfo.Invoke(service, parameters);
+            var arguments = GraphQlUtils.BuildArguments(_serviceMethod, context).ToArray();
 
-            //if (!_isInitialized)
-            //{
-            //    var realResultType = _provider.Get(_returnRealType).GetType();
-            //    var resultType = result.GetType();
-            //    if (realResultType != resultType)
-            //    {
-            //        _objectMapper = new SingleObjectMapper(realResultType, resultType);
-            //        if (realResultType.IsEnumerable())
-            //        {
-            //            _objectMapper = new ManyObjectMapper(_objectMapper);
-            //        }
-            //    }
+            // ReSharper disable once PossibleNullReferenceException
+            var target = _serviceMethod.DeclaringType.IsInstanceOfType(context.Source)
+                ? context.Source
+                : _provider.Get(_serviceMethod.DeclaringType);
 
-            //    _isInitialized = true;
-            //}
+            if (target == null)
+                throw new InvalidOperationException($"Could not resolve an instance of {_serviceMethod.DeclaringType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");
 
-            if (_objectMapper == null)
-            {
-                return result;
-            }
-            else
-            {
-                var realResult = _provider.Get(_returnRealType);
-                _objectMapper.Populate(realResult, result);
-                return realResult;
-            }
-        }
-
-
-        private IEnumerable<object> ProcessParameters(ResolveFieldContext context)
-        {
-            foreach (var parameterInfo in _methodInfo.GetParameters())
-            {
-                if (TypeUtils.ResolveFieldContext.IsInType(parameterInfo.ParameterType))
-                {
-                    if (parameterInfo.ParameterType.IsGenericType)
-                    {
-                        var contextSourceType = parameterInfo.ParameterType.GenericTypeArguments[0];
-                        if (contextSourceType == _returnType)
-                        {
-                            yield return ConvertUtils.ChangeResolveFieldContextTypeTo(context, contextSourceType);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_returnType.Name} type.");
-                        }
-                    }
-                    else
-                    {
-                        yield return context;
-                    }
-                }
-                else
-                {
-                    var value = context.Arguments.GetValueOrDefault(parameterInfo.GetNameOrDefault(parameterInfo.Name));
-                    var convertedValue = ConvertUtils.ChangeTypeTo(value, parameterInfo.ParameterType);
-                    yield return convertedValue;
-                }
-            }
+            return _serviceMethod.Invoke(target, arguments);
         }
     }
 }

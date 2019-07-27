@@ -1,15 +1,12 @@
-﻿using System;
-using GQL.DAL;
+﻿using GQL.DAL;
 using GQL.Services.Infra;
-using GQL.Services.Infra.Core;
 using GQL.WebApp.Serviced.GraphQlV2;
-using GraphQL;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,15 +25,22 @@ namespace GQL.WebApp.Serviced
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
             var isDev = _environment.IsDevelopment();
 
             services.AddHttpContextAccessor();
 
             services.AddGraphQl<GraphQlSchema>(c => c
                 .RegisterObject<QueryRootService>()
-                .RegisterObject<IInnerService, InnerService>());
+                .RegisterObject<InnerService>()
+                .RegisterObject<Inner2Service>()
+                .RegisterInputObject<InputObject>());
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc();
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
 
             services

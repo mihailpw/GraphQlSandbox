@@ -29,6 +29,16 @@ namespace GQL.Services.Infra.Helpers
             return attributeProvider.FindInAttributes<IDeprecationReasonProvider>()?.DeprecationReason;
         }
 
+        public static bool IsRequired(this ICustomAttributeProvider attributeProvider)
+        {
+            return attributeProvider.FindInAttributes<IRequiredProvider>()?.IsRequired == true;
+        }
+
+        public static bool IsGraphQlMember(this ICustomAttributeProvider attributeProvider)
+        {
+            return attributeProvider.FindInAttributes<GraphQlAttribute>() != null;
+        }
+
         public static T FindInAttributes<T>(this ICustomAttributeProvider attributeProvider, bool inherit = false)
         {
             return attributeProvider.GetCustomAttributes(inherit).OfType<T>().FirstOrDefault();
@@ -40,14 +50,6 @@ namespace GQL.Services.Infra.Helpers
         public static bool IsGenericTypeDefinition(this Type type, Type genericType)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == genericType;
-        }
-    }
-
-    internal static class Extensions
-    {
-        public static T GetValueOrDefault<T>(this IDictionary<string, T> dictionary, string key, T defaultValue = default)
-        {
-            return dictionary.TryGetValue(key, out var value) ? value : defaultValue;
         }
     }
 }

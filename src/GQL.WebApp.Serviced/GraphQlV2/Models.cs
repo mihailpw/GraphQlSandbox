@@ -1,52 +1,67 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using GQL.Services.Infra;
 
 namespace GQL.WebApp.Serviced.GraphQlV2
 {
+    public class InputObject
+    {
+        [GraphQlField(IsRequired = true)]
+        public int? Int { get; set; }
+    }
+
     public class QueryRootService
     {
-        [ReturnType(typeof(IInnerService))]
-        public InnerModel GetAsync(int? id)
+        [GraphQlField("get", typeof(InnerService))]
+        public async Task<object> GetAsync(
+            [GraphQlParameter(IsRequired = true)] int? id,
+            [GraphQlParameter(IsRequired = true)] InputObject input)
         {
-            return new InnerModel
+            await Task.CompletedTask;
+            return new
             {
                 IntProperty = 22,
                 StringProperty = "344",
             };
         }
 
-        [ReturnType(typeof(IInnerService))]
-        public IEnumerable<InnerModel> GetMany(int? id)
+        [GraphQlField("getall", typeof(InnerService))]
+        public IEnumerable<object> GetMany()
         {
-            yield return new InnerModel
+            yield return new
             {
                 IntProperty = 22,
-                StringProperty = "344",
+                StringProperty = "k44jk",
             };
-            yield return new InnerModel
+            yield return new
             {
                 IntProperty = 22322,
-                StringProperty = "34334",
+                StringProperty = "hghgh",
             };
         }
     }
 
-    public class InnerModel
+    public class InnerService
     {
+        [GraphQlField]
         public string StringProperty { get; set; }
+        [GraphQlField]
         public int IntProperty { get; set; }
+
+        [GraphQlField("getasync", typeof(Inner2Service))]
+        public async Task<object> GetAsync()
+        {
+            await Task.CompletedTask;
+            return new
+            {
+                LongProperty = (long) 22,
+            };
+        }
     }
 
-    public interface IInnerService
+    public class Inner2Service
     {
-        string StringProperty { get; set; }
-        int IntProperty { get; set; }
-    }
-
-    public class InnerService : IInnerService
-    {
-        public string StringProperty { get; set; }
-        public int IntProperty { get; set; }
+        [GraphQlField]
+        public long LongProperty { get; set; }
     }
 }

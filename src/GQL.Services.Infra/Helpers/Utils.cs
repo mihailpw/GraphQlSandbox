@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using GQL.Services.Infra.Types;
 using GraphQL.Types;
-using GraphQL.Utilities;
 
 namespace GQL.Services.Infra.Helpers
 {
@@ -17,15 +16,50 @@ namespace GQL.Services.Infra.Helpers
 
         public static IEnumerable<PropertyInfo> GetRegisteredProperties(Type type)
         {
-            return type.GetProperties(DefaultBindingFlags).Where(p => IsEnabledForRegister(p.PropertyType));
+            bool CheckIfPropertySupported(PropertyInfo propertyInfo)
+            {
+                var isSupported = propertyInfo.IsGraphQlMember();
+                if (!isSupported)
+                {
+                    return false;
+                }
+
+                var propertyType = propertyInfo.GetReturnTypeOrDefault(propertyInfo.PropertyType);
+                if (!IsEnabledForRegister(propertyType))
+                {
+                    // ReSharper disable once PossibleNullReferenceException
+                    throw new NotSupportedException($"The property type of {propertyInfo.DeclaringType.Name}.{propertyInfo.Name}() is not registered (type name: {propertyType.Name}).");
+                }
+
+                return true;
+            }
+
+            return type.GetProperties(DefaultBindingFlags).Where(CheckIfPropertySupported);
         }
 
         public static IEnumerable<MethodInfo> GetRegisteredMethods(Type type)
         {
-            return type.GetMethods(DefaultBindingFlags).Where(m =>
-                !m.IsSpecialName
-                && IsEnabledForRegister(m.ReturnType)
-                && m.DeclaringType != typeof(object));
+            bool CheckIfMethodSupported(MethodInfo methodInfo)
+            {
+                var isSupported = !methodInfo.IsSpecialName
+                    && methodInfo.IsGraphQlMember()
+                    && methodInfo.DeclaringType != typeof(object);
+                if (!isSupported)
+                {
+                    return false;
+                }
+
+                var returnType = methodInfo.GetReturnTypeOrDefault(methodInfo.ReturnType);
+                if (!IsEnabledForRegister(returnType))
+                {
+                    // ReSharper disable once PossibleNullReferenceException
+                    throw new NotSupportedException($"The return type of {methodInfo.DeclaringType.Name}.{methodInfo.Name}() is not registered (type name: {returnType.Name}).");
+                }
+
+                return true;
+            }
+
+            return type.GetMethods(DefaultBindingFlags).Where(CheckIfMethodSupported);
         }
 
         public static IEnumerable<ParameterInfo> GetAvailableParameters(MethodInfo methodInfo)
@@ -33,14 +67,15 @@ namespace GQL.Services.Infra.Helpers
             return methodInfo.GetParameters().Where(p => !TypeUtils.ResolveFieldContext.IsInType(p.ParameterType));
         }
 
-        public static Type GetGraphQlTypeFor(Type type, bool isForceNullable = false)
+        public static Type GetGraphQlTypeFor(Type type, bool isRequired = false)
         {
             var processingType = TypeUtils.Task.UnwrapType(type);
+            var isNullable = !processingType.IsValueType;
 
             if (TypeUtils.Nullable.IsInType(processingType))
             {
                 processingType = TypeUtils.Nullable.UnwrapType(processingType);
-                isForceNullable = true;
+                isNullable = true;
             }
 
             Type graphQlType;
@@ -50,12 +85,15 @@ namespace GQL.Services.Infra.Helpers
                 var innerGraphQlType = GetGraphQlTypeFor(enumerableElementType);
                 graphQlType = typeof(ListGraphType<>).MakeGenericType(innerGraphQlType);
             }
-            else
+            else 
             {
-                graphQlType = typeof(AutoRegisteringObjectGraphType<>).MakeGenericType(processingType);
+                if (!GraphQlTypeRegistry.Instance.TryGetRegistered(processingType, out graphQlType))
+                {
+                    throw new InvalidOperationException($"Type {processingType.Name} is not registered.");
+                }
             }
 
-            if (!isForceNullable)
+            if (isRequired || !isNullable)
             {
                 graphQlType = typeof(NonNullGraphType<>).MakeGenericType(graphQlType);
             }
@@ -66,7 +104,43 @@ namespace GQL.Services.Infra.Helpers
         public static bool IsEnabledForRegister(Type type)
         {
             var realType = TypeUtils.GetRealType(type);
-            return GraphTypeTypeRegistry.Contains(realType);
+            var isEnabledForRegister = //realType.IsGraphQlMember();
+                GraphQlTypeRegistry.Instance.IsRegistered(realType);
+            return isEnabledForRegister;
+        }
+
+        public static IEnumerable<object> BuildArguments(
+            MethodInfo methodInfo,
+            ResolveFieldContext context)
+        {
+            foreach (var parameterInfo in methodInfo.GetParameters())
+            {
+                if (TypeUtils.ResolveFieldContext.IsInType(parameterInfo.ParameterType))
+                {
+                    //if (parameterInfo.ParameterType.IsGenericType)
+                    //{
+                    //    var contextSourceType = parameterInfo.ParameterType.GenericTypeArguments[0];
+                    //    if (contextSourceType == methodInfo.DeclaringType)
+                    //    {
+                    //        yield return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(contextSourceType), context);
+                    //    }
+                    //    else
+                    //    {
+                    //        throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_returnType.Name} type.");
+                    //    }
+                    //}
+                    //else
+                    {
+                        yield return context;
+                    }
+                }
+                else
+                {
+                    var value = context.GetArgument(parameterInfo.ParameterType, parameterInfo.GetNameOrDefault(parameterInfo.Name));
+                    yield return value;
+                }
+            }
+
         }
     }
 
@@ -173,40 +247,6 @@ namespace GQL.Services.Infra.Helpers
             if (Task.IsInType(type))
                 return Task.UnwrapType(type);
             return type;
-        }
-    }
-
-    public class ConvertUtils
-    {
-        public static object ChangeTypeTo(object value, Type toType)
-        {
-            if (value == null)
-            {
-                return null;
-            }
-
-            var underlyingType = toType;
-
-            if (TypeUtils.Nullable.IsInType(underlyingType))
-            {
-                var converter = new NullableConverter(underlyingType);
-                underlyingType = converter.UnderlyingType;
-            }
-
-            if (underlyingType == typeof(Guid))
-            {
-                return new Guid(value.ToString());
-            }
-
-            // ReSharper disable once UseMethodIsInstanceOfType
-            return underlyingType.IsAssignableFrom(value.GetType())
-                ? Convert.ChangeType(value, underlyingType)
-                : Convert.ChangeType(value.ToString(), underlyingType);
-        }
-
-        public static object ChangeResolveFieldContextTypeTo(ResolveFieldContext context, Type sourceType)
-        {
-            return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(sourceType), context);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using GQL.Services.Infra.Helpers;
 using GraphQL.Resolvers;
@@ -22,38 +22,40 @@ namespace GQL.Services.Infra.Core
                 Name = propertyInfo.GetNameOrDefault(propertyInfo.Name),
                 Description = propertyInfo.GetDescription(),
                 DeprecationReason = propertyInfo.GetDeprecationReason(),
-                Type = GraphQlUtils.GetGraphQlTypeFor(type),
+                Type = GraphQlUtils.GetGraphQlTypeFor(type, propertyInfo.IsRequired()),
                 Arguments = null,
                 Resolver = fieldResolver,
                 DefaultValue = propertyInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
             };
         }
 
-        public QueryArgument CreateQueryArgument(ParameterInfo parameterInfo)
-        {
-            var type = parameterInfo.GetReturnTypeOrDefault(parameterInfo.ParameterType);
-
-            return new QueryArgument(GraphQlUtils.GetGraphQlTypeFor(type))
-            {
-                Name = parameterInfo.Name,
-                Description = parameterInfo.FindInAttributes<DescriptionAttribute>()?.Description,
-                DefaultValue = parameterInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
-            };
-        }
-
-        public FieldType CreateFieldType(MethodInfo methodInfo, IEnumerable<QueryArgument> queryArguments, IFieldResolver fieldResolver = null)
+        public FieldType CreateFieldType(MethodInfo methodInfo, IFieldResolver fieldResolver = null)
         {
             var type = methodInfo.GetReturnTypeOrDefault(methodInfo.ReturnType);
+            var queryArguments = GraphQlUtils.GetAvailableParameters(methodInfo).Select(CreateQueryArgument);
 
             return new FieldType
             {
                 Name = methodInfo.Name,
                 Description = methodInfo.FindInAttributes<DescriptionAttribute>()?.Description,
                 DeprecationReason = methodInfo.FindInAttributes<ObsoleteAttribute>()?.Message,
-                Type = GraphQlUtils.GetGraphQlTypeFor(type),
+                Type = GraphQlUtils.GetGraphQlTypeFor(type, methodInfo.IsRequired()),
                 Arguments = new QueryArguments(queryArguments),
                 Resolver = fieldResolver,
                 DefaultValue = methodInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
+            };
+        }
+
+
+        private static QueryArgument CreateQueryArgument(ParameterInfo parameterInfo)
+        {
+            var type = parameterInfo.GetReturnTypeOrDefault(parameterInfo.ParameterType);
+
+            return new QueryArgument(GraphQlUtils.GetGraphQlTypeFor(type, parameterInfo.IsRequired()))
+            {
+                Name = parameterInfo.Name,
+                Description = parameterInfo.FindInAttributes<DescriptionAttribute>()?.Description,
+                DefaultValue = parameterInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
             };
         }
     }
