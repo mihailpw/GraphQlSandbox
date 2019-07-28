@@ -8,7 +8,7 @@ namespace GQL.Services.Infra.Types
 {
     internal sealed class AutoInputObjectGraphType<T> : InputObjectGraphType
     {
-        private readonly GraphQlPartsFactory _graphQlPartsFactory = GraphQlPartsFactory.Instance;
+        private readonly IGraphQlPartsFactory _partsFactory = GlobalContext.PartsFactory;
 
 
         public AutoInputObjectGraphType()
@@ -21,7 +21,7 @@ namespace GQL.Services.Infra.Types
 
             foreach (var propertyInfo in GraphQlUtils.GetRegisteredProperties(typeof(T)))
             {
-                AddField(_graphQlPartsFactory.CreateFieldType(propertyInfo));
+                AddField(_partsFactory.CreateFieldType(propertyInfo));
             }
 
             if (!Fields.Any())

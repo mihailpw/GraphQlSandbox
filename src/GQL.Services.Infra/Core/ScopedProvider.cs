@@ -4,23 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GQL.Services.Infra.Core
 {
-    public static class ProviderContext
-    {
-        public static IProvider Instance { get; set; }
-    }
-
-    public interface IProvider
-    {
-        object Get(Type type);
-        T Get<T>();
-    }
-
-    internal class ScopedProvider : IProvider
+    internal class ScopedScopedProvider : IScopedProvider
     {
         private readonly IHttpContextAccessor _contextAccessor;
 
 
-        public ScopedProvider(IHttpContextAccessor contextAccessor)
+        public ScopedScopedProvider(IHttpContextAccessor contextAccessor)
         {
             _contextAccessor = contextAccessor;
         }

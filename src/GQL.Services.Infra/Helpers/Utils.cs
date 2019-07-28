@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using GQL.Services.Infra.Types;
+using GQL.Services.Infra.Core;
 using GraphQL.Types;
 
 namespace GQL.Services.Infra.Helpers
@@ -62,6 +62,11 @@ namespace GQL.Services.Infra.Helpers
             return type.GetMethods(DefaultBindingFlags).Where(CheckIfMethodSupported);
         }
 
+        public static IEnumerable<Type> GetRegisteredInterfaces(Type type)
+        {
+            return type.GetInterfaces().Where(t => t.IsGraphQlMember() && IsEnabledForRegister(t));
+        }
+
         public static IEnumerable<ParameterInfo> GetAvailableParameters(MethodInfo methodInfo)
         {
             return methodInfo.GetParameters().Where(p => !TypeUtils.ResolveFieldContext.IsInType(p.ParameterType));
@@ -85,12 +90,9 @@ namespace GQL.Services.Infra.Helpers
                 var innerGraphQlType = GetGraphQlTypeFor(enumerableElementType);
                 graphQlType = typeof(ListGraphType<>).MakeGenericType(innerGraphQlType);
             }
-            else 
+            else
             {
-                if (!GraphQlTypeRegistry.Instance.TryGetRegistered(processingType, out graphQlType))
-                {
-                    throw new InvalidOperationException($"Type {processingType.Name} is not registered.");
-                }
+                graphQlType = GlobalContext.TypeRegistry.Resolve(processingType);
             }
 
             if (isRequired || !isNullable)
@@ -104,8 +106,7 @@ namespace GQL.Services.Infra.Helpers
         public static bool IsEnabledForRegister(Type type)
         {
             var realType = TypeUtils.GetRealType(type);
-            var isEnabledForRegister = //realType.IsGraphQlMember();
-                GraphQlTypeRegistry.Instance.IsRegistered(realType);
+            var isEnabledForRegister = GlobalContext.TypeRegistry.IsRegistered(realType);
             return isEnabledForRegister;
         }
 
@@ -240,13 +241,18 @@ namespace GQL.Services.Infra.Helpers
 
         public static Type GetRealType(Type type)
         {
-            if (Nullable.IsInType(type))
-                return Nullable.UnwrapType(type);
-            if (Enumerable.IsInType(type))
-                return Enumerable.UnwrapType(type);
-            if (Task.IsInType(type))
-                return Task.UnwrapType(type);
-            return type;
+            var resultType = type;
+            while (true)
+            {
+                if (Nullable.IsInType(resultType))
+                    resultType = Nullable.UnwrapType(resultType);
+                else if (Enumerable.IsInType(resultType))
+                    resultType = Enumerable.UnwrapType(resultType);
+                else if (Task.IsInType(resultType))
+                    resultType = Task.UnwrapType(resultType);
+                else
+                    return resultType;
+            }
         }
     }
 }

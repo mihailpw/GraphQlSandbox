@@ -8,7 +8,7 @@ namespace GQL.Services.Infra.Types
 {
     internal sealed class AutoInterfaceGraphType<T> : InterfaceGraphType
     {
-        private readonly GraphQlPartsFactory _graphQlPartsFactory = GraphQlPartsFactory.Instance;
+        private readonly IGraphQlPartsFactory _partsFactory = GlobalContext.PartsFactory;
 
 
         public AutoInterfaceGraphType()
@@ -21,12 +21,12 @@ namespace GQL.Services.Infra.Types
 
             foreach (var propertyInfo in GraphQlUtils.GetRegisteredProperties(typeof(T)))
             {
-                AddField(_graphQlPartsFactory.CreateFieldType(propertyInfo));
+                AddField(_partsFactory.CreateFieldType(propertyInfo));
             }
 
             foreach (var methodInfo in GraphQlUtils.GetRegisteredMethods(typeof(T)))
             {
-                AddField(_graphQlPartsFactory.CreateFieldType(methodInfo));
+                AddField(_partsFactory.CreateFieldType(methodInfo));
             }
 
             if (!Fields.Any())

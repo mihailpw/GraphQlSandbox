@@ -7,9 +7,11 @@ using GraphQL.Types;
 
 namespace GQL.Services.Infra.Types
 {
-    internal sealed class AutoObjectGraphType<T> : ObjectGraphType
+    internal sealed class AutoObjectGraphType<T> : ObjectGraphType<T>
     {
-        private readonly GraphQlPartsFactory _graphQlPartsFactory = GraphQlPartsFactory.Instance;
+        private readonly IGraphQlPartsFactory _partsFactory = GlobalContext.PartsFactory;
+        private readonly IConfig _config = GlobalContext.Config;
+        private readonly IScopedProvider _scopedProvider = GlobalContext.ScopedProvider;
 
 
         public AutoObjectGraphType()
@@ -22,21 +24,33 @@ namespace GQL.Services.Infra.Types
 
             foreach (var propertyInfo in GraphQlUtils.GetRegisteredProperties(type))
             {
-                AddField(_graphQlPartsFactory.CreateFieldType(
+                AddField(_partsFactory.CreateFieldType(
                     propertyInfo,
-                    new PropertyFieldResolver(propertyInfo, ProviderContext.Instance)));
+                    new PropertyFieldResolver(propertyInfo, _config)));
             }
 
             foreach (var methodInfo in GraphQlUtils.GetRegisteredMethods(type))
             {
-                AddField(_graphQlPartsFactory.CreateFieldType(
+                AddField(_partsFactory.CreateFieldType(
                     methodInfo,
-                    new MethodFieldResolver(methodInfo, ProviderContext.Instance)));
+                    new MethodFieldResolver(methodInfo, _scopedProvider)));
             }
 
             if (!Fields.Any())
             {
                 throw new InvalidOperationException($"Type {type.Name} has not supported fields.");
+            }
+
+            var requireConfigureIsTypeOf = false;
+            foreach (var interfaceType in GraphQlUtils.GetRegisteredInterfaces(type))
+            {
+                requireConfigureIsTypeOf = true;
+                Interface(_partsFactory.CreateInterfaceType(interfaceType));
+            }
+
+            if (requireConfigureIsTypeOf)
+            {
+                IsTypeOf = _partsFactory.CreateIsTypeOfFunc(type);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using GraphQL.Types;
 
 namespace GQL.Services.Infra
 {
@@ -44,9 +43,12 @@ namespace GQL.Services.Infra
         }
     }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
-    public class GraphQlIdAttribute : GraphQlAttribute, IReturnTypeProvider
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
+    public class GraphQlIdFieldAttribute : GraphQlFieldAttribute
     {
-        public Type ReturnType => typeof(IdGraphType);
+        public GraphQlIdFieldAttribute(string name = null)
+            : base(name, typeof(IdObject))
+        {
+        }
     }
 }

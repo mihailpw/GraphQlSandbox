@@ -1,6 +1,8 @@
 ﻿using GQL.DAL;
+using GQL.DAL.Models;
 using GQL.Services.Infra;
 using GQL.WebApp.Serviced.GraphQlV2;
+using GQL.WebApp.Serviced.GraphQlV2.Models;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
@@ -9,15 +11,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace GQL.WebApp.Serviced
 {
     public class Startup
     {
-        private readonly IHostingEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
 
 
-        public Startup(IHostingEnvironment environment)
+        public Startup(IWebHostEnvironment environment)
         {
             _environment = environment;
         }
@@ -25,20 +28,18 @@ namespace GQL.WebApp.Serviced
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<KestrelServerOptions>(options =>
-            {
-                options.AllowSynchronousIO = true;
-            });
+            services.Configure<KestrelServerOptions>(o => o.AllowSynchronousIO = true);
 
             var isDev = _environment.IsDevelopment();
 
             services.AddHttpContextAccessor();
 
             services.AddGraphQl<GraphQlSchema>(c => c
-                .RegisterObject<QueryRootService>()
-                .RegisterObject<InnerService>()
-                .RegisterObject<Inner2Service>()
-                .RegisterInputObject<InputObject>());
+                .RegisterObject<UsersQuery>()
+                .RegisterInterface<IUserObject>(mc => mc
+                    .Map<UserModelBase>())
+                .RegisterObject<CustomerUserObject>()
+                .RegisterObject<ManagerUserObject>());
 
             services.AddMvc();
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));
@@ -68,11 +69,9 @@ namespace GQL.WebApp.Serviced
 
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions { GraphQLEndPoint = PathString.FromUriComponent("/graphql") });
 
-            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                var dbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
-                DbSeeder.Seed(dbContext);
-            }
+            using var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+            var dbContext = serviceScope.ServiceProvider.GetService<AppDbContext>();
+            DbSeeder.Seed(dbContext);
         }
     }
 }

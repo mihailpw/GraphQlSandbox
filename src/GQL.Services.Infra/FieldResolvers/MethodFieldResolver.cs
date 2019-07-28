@@ -11,13 +11,13 @@ namespace GQL.Services.Infra.FieldResolvers
     internal class MethodFieldResolver : IFieldResolver
     {
         private readonly MethodInfo _serviceMethod;
-        private readonly IProvider _provider;
+        private readonly IScopedProvider _scopedProvider;
 
 
-        public MethodFieldResolver(MethodInfo serviceMethod, IProvider provider)
+        public MethodFieldResolver(MethodInfo serviceMethod, IScopedProvider scopedProvider)
         {
             _serviceMethod = serviceMethod;
-            _provider = provider;
+            _scopedProvider = scopedProvider;
         }
 
 
@@ -28,7 +28,7 @@ namespace GQL.Services.Infra.FieldResolvers
             // ReSharper disable once PossibleNullReferenceException
             var target = _serviceMethod.DeclaringType.IsInstanceOfType(context.Source)
                 ? context.Source
-                : _provider.Get(_serviceMethod.DeclaringType);
+                : _scopedProvider.Get(_serviceMethod.DeclaringType);
 
             if (target == null)
                 throw new InvalidOperationException($"Could not resolve an instance of {_serviceMethod.DeclaringType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");

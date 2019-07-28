@@ -8,9 +8,15 @@ using GraphQL.Types;
 
 namespace GQL.Services.Infra.Core
 {
-    public class GraphQlPartsFactory
+    internal class GraphQlPartsFactory : IGraphQlPartsFactory
     {
-        public static readonly GraphQlPartsFactory Instance = new GraphQlPartsFactory();
+        private readonly IGraphQlTypeRegistry _typeRegistry;
+
+
+        public GraphQlPartsFactory(IGraphQlTypeRegistry typeRegistry)
+        {
+            _typeRegistry = typeRegistry;
+        }
 
 
         public FieldType CreateFieldType(PropertyInfo propertyInfo, IFieldResolver fieldResolver = null)
@@ -36,14 +42,45 @@ namespace GQL.Services.Infra.Core
 
             return new FieldType
             {
-                Name = methodInfo.Name,
-                Description = methodInfo.FindInAttributes<DescriptionAttribute>()?.Description,
-                DeprecationReason = methodInfo.FindInAttributes<ObsoleteAttribute>()?.Message,
+                Name = methodInfo.GetNameOrDefault(methodInfo.Name),
+                Description = methodInfo.GetDescription(),
+                DeprecationReason = methodInfo.GetDeprecationReason(),
                 Type = GraphQlUtils.GetGraphQlTypeFor(type, methodInfo.IsRequired()),
                 Arguments = new QueryArguments(queryArguments),
                 Resolver = fieldResolver,
                 DefaultValue = methodInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
             };
+        }
+
+        public Type CreateInterfaceType(Type interfaceType)
+        {
+            return GraphQlUtils.GetGraphQlTypeFor(interfaceType);
+        }
+
+        public Func<object, bool> CreateIsTypeOfFunc(Type type)
+        {
+            var additionalTypes = _typeRegistry.ResolveAdditional(type).ToList();
+
+            bool IsTypeOfFunc(object target)
+            {
+                var targetType = target.GetType();
+                if (type == targetType)
+                {
+                    return true;
+                }
+
+                foreach (var additionalType in additionalTypes)
+                {
+                    if (additionalType == targetType)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            return IsTypeOfFunc;
         }
 
 
@@ -54,7 +91,7 @@ namespace GQL.Services.Infra.Core
             return new QueryArgument(GraphQlUtils.GetGraphQlTypeFor(type, parameterInfo.IsRequired()))
             {
                 Name = parameterInfo.Name,
-                Description = parameterInfo.FindInAttributes<DescriptionAttribute>()?.Description,
+                Description = parameterInfo.GetDescription(),
                 DefaultValue = parameterInfo.FindInAttributes<DefaultValueAttribute>()?.Value,
             };
         }

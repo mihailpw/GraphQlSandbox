@@ -7,16 +7,16 @@ using GraphQL.Types;
 
 namespace GQL.Services.Infra.FieldResolvers
 {
-    public class PropertyFieldResolver : IFieldResolver
+    internal class PropertyFieldResolver : IFieldResolver
     {
         private readonly PropertyInfo _serviceProperty;
-        private readonly IProvider _provider;
+        private readonly IConfig _config;
 
 
-        public PropertyFieldResolver(PropertyInfo serviceProperty, IProvider provider)
+        public PropertyFieldResolver(PropertyInfo serviceProperty, IConfig config)
         {
             _serviceProperty = serviceProperty;
-            _provider = provider;
+            _config = config;
         }
 
 
@@ -34,7 +34,7 @@ namespace GQL.Services.Infra.FieldResolvers
 
                 if (propertyInfo == null)
                 {
-                    if (DebugInfo.IsDebug)
+                    if (_config.ThrowIfPropertyNotFound)
                     {
                         throw new InvalidOperationException($"Property {_serviceProperty.Name} not found in {sourceType.Name} type.");
                     }
@@ -42,7 +42,7 @@ namespace GQL.Services.Infra.FieldResolvers
                     return ActivatorHelper.CreateDefault(_serviceProperty.PropertyType);
                 }
 
-                if (DebugInfo.IsDebug)
+                if (_config.ThrowIfPropertiesTypesDifferent)
                 {
                     if (!_serviceProperty.PropertyType.IsAssignableFrom(propertyInfo.PropertyType))
                     {
