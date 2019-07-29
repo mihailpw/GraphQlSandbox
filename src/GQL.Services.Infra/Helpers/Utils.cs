@@ -116,28 +116,29 @@ namespace GQL.Services.Infra.Helpers
         {
             foreach (var parameterInfo in methodInfo.GetParameters())
             {
-                if (TypeUtils.ResolveFieldContext.IsInType(parameterInfo.ParameterType))
+                var returnType = parameterInfo.ParameterType;
+                if (TypeUtils.ResolveFieldContext.IsInType(returnType))
                 {
-                    //if (parameterInfo.ParameterType.IsGenericType)
-                    //{
-                    //    var contextSourceType = parameterInfo.ParameterType.GenericTypeArguments[0];
-                    //    if (contextSourceType == methodInfo.DeclaringType)
-                    //    {
-                    //        yield return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(contextSourceType), context);
-                    //    }
-                    //    else
-                    //    {
-                    //        throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {_returnType.Name} type.");
-                    //    }
-                    //}
-                    //else
+                    if (returnType.IsGenericType)
+                    {
+                        var contextSourceType = returnType.GenericTypeArguments[0];
+                        if (contextSourceType.IsInstanceOfType(context.Source))
+                        {
+                            yield return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(contextSourceType), context);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {context.Source.GetType().Name} type.");
+                        }
+                    }
+                    else
                     {
                         yield return context;
                     }
                 }
                 else
                 {
-                    var value = context.GetArgument(parameterInfo.ParameterType, parameterInfo.GetNameOrDefault(parameterInfo.Name));
+                    var value = context.GetArgument(returnType, parameterInfo.GetNameOrDefault(parameterInfo.Name));
                     yield return value;
                 }
             }
@@ -145,7 +146,7 @@ namespace GQL.Services.Infra.Helpers
         }
     }
 
-    public static class TypeUtils
+    internal static class TypeUtils
     {
         public static class Enumerable
         {
@@ -227,7 +228,7 @@ namespace GQL.Services.Infra.Helpers
         {
             public static bool IsInType(Type type)
             {
-                return type == typeof(ResolveFieldContext) || type.IsGenericTypeDefinition(typeof(ResolveFieldContext<>));
+                return type == typeof(GraphQL.Types.ResolveFieldContext) || type.IsGenericTypeDefinition(typeof(ResolveFieldContext<>));
             }
 
             public static Type UnwrapType(Type type)

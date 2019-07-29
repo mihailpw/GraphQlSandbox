@@ -33,7 +33,7 @@ namespace GQL.Services.Infra.Types
             {
                 AddField(_partsFactory.CreateFieldType(
                     methodInfo,
-                    new MethodFieldResolver(methodInfo, _scopedProvider)));
+                    new MethodFieldResolver(type, methodInfo, _scopedProvider)));
             }
 
             if (!Fields.Any())

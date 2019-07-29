@@ -23,7 +23,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
 
         [GraphQlField("user")]
         public async Task<UserModelBase> ResolveUserAsync(
-            ResolveFieldContext<object> context,
+            ResolveFieldContext context,
             [GraphQlParameter(Description = "User identificator", IsRequired = true)] string id,
             [GraphQlParameter(Description = "User type")] UserType? type = null)
         {
@@ -35,7 +35,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
 
         [GraphQlField("users")]
         public async Task<IEnumerable<UserModelBase>> ResolveUsersAsync(
-            ResolveFieldContext<object> context,
+            ResolveFieldContext context,
             [GraphQlParameter(Description = "User type")] UserType? type = null)
         {
             var users = await GetUserModelSet(context, type)
@@ -46,7 +46,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
 
         [GraphQlField("usersCount")]
         public async Task<int?> ResolveUsersCountAsync(
-            ResolveFieldContext<object> context,
+            ResolveFieldContext context,
             [GraphQlParameter(Description = "Can be 'c' for customer or 'm' for manager.")] string position = null)
         {
             switch (position)
@@ -65,7 +65,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
         }
 
         [GraphQlField("customers")]
-        public async Task<IEnumerable<UserModelBase>> ResolveCustomersAsync(ResolveFieldContext<object> context)
+        public async Task<IEnumerable<UserModelBase>> ResolveCustomersAsync(ResolveFieldContext context)
         {
             var customers = await GetUserModelSet(context, null)
                 .OfType<CustomerUserModel>()
@@ -74,7 +74,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
             return customers;
         }
 
-        private IQueryable<UserModelBase> GetUserModelSet(ResolveFieldContext<object> context, UserType? userType)
+        private IQueryable<UserModelBase> GetUserModelSet(ResolveFieldContext context, UserType? userType)
         {
             IQueryable<UserModelBase> resultQuery = _appDbContext.Set<UserModelBase>();
 

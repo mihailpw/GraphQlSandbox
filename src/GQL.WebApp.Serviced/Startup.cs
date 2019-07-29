@@ -38,8 +38,10 @@ namespace GQL.WebApp.Serviced
                 .RegisterObject<UsersQuery>()
                 .RegisterInterface<IUserObject>(mc => mc
                     .Map<UserModelBase>())
-                .RegisterObject<CustomerUserObject>()
-                .RegisterObject<ManagerUserObject>());
+                .RegisterObject<CustomerUserObject>(mc => mc
+                    .Map<CustomerUserModel>())
+                .RegisterObject<ManagerUserObject>(mc => mc
+                    .Map<ManagerUserModel>()));
 
             services.AddMvc();
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));

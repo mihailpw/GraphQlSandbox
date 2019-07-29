@@ -10,12 +10,14 @@ namespace GQL.Services.Infra.FieldResolvers
 {
     internal class MethodFieldResolver : IFieldResolver
     {
+        private readonly Type _serviceType;
         private readonly MethodInfo _serviceMethod;
         private readonly IScopedProvider _scopedProvider;
 
 
-        public MethodFieldResolver(MethodInfo serviceMethod, IScopedProvider scopedProvider)
+        public MethodFieldResolver(Type serviceType, MethodInfo serviceMethod, IScopedProvider scopedProvider)
         {
+            _serviceType = serviceType;
             _serviceMethod = serviceMethod;
             _scopedProvider = scopedProvider;
         }
@@ -25,13 +27,12 @@ namespace GQL.Services.Infra.FieldResolvers
         {
             var arguments = GraphQlUtils.BuildArguments(_serviceMethod, context).ToArray();
 
-            // ReSharper disable once PossibleNullReferenceException
-            var target = _serviceMethod.DeclaringType.IsInstanceOfType(context.Source)
+            var target = _serviceType.IsInstanceOfType(context.Source)
                 ? context.Source
-                : _scopedProvider.Get(_serviceMethod.DeclaringType);
+                : _scopedProvider.Get(_serviceType);
 
             if (target == null)
-                throw new InvalidOperationException($"Could not resolve an instance of {_serviceMethod.DeclaringType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");
+                throw new InvalidOperationException($"Could not resolve an instance of {_serviceType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");
 
             return _serviceMethod.Invoke(target, arguments);
         }
