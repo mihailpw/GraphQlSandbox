@@ -32,8 +32,6 @@ namespace GQL.WebApp.Serviced
 
             var isDev = _environment.IsDevelopment();
 
-            services.AddHttpContextAccessor();
-
             services.AddGraphQl<GraphQlSchema>(c => c
                 .RegisterObject<UsersQuery>()
                 .RegisterInterface<IUserObject>(mc => mc

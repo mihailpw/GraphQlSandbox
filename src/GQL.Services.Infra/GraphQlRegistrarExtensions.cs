@@ -14,7 +14,8 @@ namespace GQL.Services.Infra
             services.AddSingleton<TSchema>();
 
             var registry = new GraphQlTypeRegistry();
-            services.AddTransient<IScopedProvider, ScopedScopedProvider>();
+            services.AddHttpContextAccessor();
+            services.AddTransient<IScopedProvider, ScopedProvider>();
             services.AddSingleton<IGraphQlPartsFactory, GraphQlPartsFactory>();
             services.AddSingleton<IGraphQlTypeRegistry>(registry);
 

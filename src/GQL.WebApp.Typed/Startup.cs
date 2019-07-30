@@ -1,6 +1,7 @@
 ﻿using GQL.DAL;
 using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Schemas.Users;
+using GQL.WebApp.Typed.Infra;
 using GQL.WebApp.Typed.Managers;
 using GraphQL;
 using GraphQL.Server;
@@ -29,6 +30,8 @@ namespace GQL.WebApp.Typed
         {
             var isDev = _environment.IsDevelopment();
 
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IScopedProvider, ScopedProvider>();
             services.AddSingleton<IUsersObservable, UsersObservable>();
             services.AddScoped<IUsersManager, UsersManager>();
 

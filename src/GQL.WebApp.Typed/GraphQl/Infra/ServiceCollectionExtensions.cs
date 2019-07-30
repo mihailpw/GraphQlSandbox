@@ -8,8 +8,8 @@ namespace GQL.WebApp.Typed.GraphQl.Infra
             where TSchema : GraphSchema
             where TQuery : GraphQuery
         {
-            services.AddScoped<TSchema>();
-            services.AddScoped<TQuery>();
+            services.AddSingleton<TSchema>();
+            services.AddSingleton<TQuery>();
         }
 
         public static void AddGraphSchema<TSchema, TQuery, TMutation>(this IServiceCollection services)
@@ -18,7 +18,7 @@ namespace GQL.WebApp.Typed.GraphQl.Infra
             where TMutation : GraphMutation
         {
             services.AddGraphSchema<TSchema, TQuery>();
-            services.AddScoped<TMutation>();
+            services.AddSingleton<TMutation>();
         }
 
         public static void AddGraphSchema<TSchema, TQuery, TMutation, TSubscription>(this IServiceCollection services)
@@ -28,7 +28,7 @@ namespace GQL.WebApp.Typed.GraphQl.Infra
             where TSubscription : GraphSubscription
         {
             services.AddGraphSchema<TSchema, TQuery, TMutation>();
-            services.AddScoped<TSubscription>();
+            services.AddSingleton<TSubscription>();
         }
     }
 }

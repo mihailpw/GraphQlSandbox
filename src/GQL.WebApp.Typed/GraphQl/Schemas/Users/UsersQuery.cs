@@ -5,6 +5,7 @@ using GQL.DAL;
 using GQL.DAL.Models;
 using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Models;
+using GQL.WebApp.Typed.Infra;
 using GraphQL.Execution;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +14,15 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 {
     public class UsersQuery : GraphQuery
     {
-        private readonly AppDbContext _appDbContext;
+        private readonly IScopedProvider _scopedProvider;
 
 
-        public UsersQuery(AppDbContext appDbContext)
+        private AppDbContext AppDbContext => _scopedProvider.Get<AppDbContext>();
+
+
+        public UsersQuery(IScopedProvider scopedProvider)
         {
-            _appDbContext = appDbContext;
+            _scopedProvider = scopedProvider;
 
             FieldAsync<UserInterface>(
                 "user",
@@ -84,12 +88,12 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
             switch ((string) type)
             {
                 case "c":
-                    return await _appDbContext.Set<CustomerUserModel>().CountAsync();
+                    return await AppDbContext.Set<CustomerUserModel>().CountAsync();
                 case "m":
-                    return await _appDbContext.Set<ManagerUserModel>().CountAsync();
+                    return await AppDbContext.Set<ManagerUserModel>().CountAsync();
                 case "":
                 case null:
-                    return await _appDbContext.Set<UserModelBase>().CountAsync();
+                    return await AppDbContext.Set<UserModelBase>().CountAsync();
                 default:
                     context.Errors.Add(new InvalidValueException("type", $"Type '{type}' not found."));
                     return null;
@@ -107,7 +111,7 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
 
         private IQueryable<UserModelBase> GetUserModelSet(ResolveFieldContext<object> context)
         {
-            IQueryable<UserModelBase> resultQuery = _appDbContext.Set<UserModelBase>();
+            IQueryable<UserModelBase> resultQuery = AppDbContext.Set<UserModelBase>();
 
             if (context.SubFields.Values.TryFindField(nameof(UserModelBase.Roles), out _))
             {

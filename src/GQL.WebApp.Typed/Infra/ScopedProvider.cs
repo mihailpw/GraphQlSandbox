@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GQL.Services.Infra.Core
+namespace GQL.WebApp.Typed.Infra
 {
     internal class ScopedProvider : IScopedProvider
     {
