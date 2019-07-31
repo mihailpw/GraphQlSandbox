@@ -21,6 +21,7 @@ namespace GQL.WebApp.Serviced
             //Query = new GraphQlAutoRegisteringModelType();
 
             Query = new GraphTypeFactory().CreateObject(typeof(UsersQuery));
+            Mutation = new GraphTypeFactory().CreateObject(typeof(UsersMutation));
 
             RegisterType(typeof(CustomerUserObject));
             RegisterType(typeof(ManagerUserObject));

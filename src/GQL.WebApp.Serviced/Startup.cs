@@ -2,7 +2,9 @@
 using GQL.DAL.Models;
 using GQL.Services.Infra;
 using GQL.WebApp.Serviced.GraphQlV2;
+using GQL.WebApp.Serviced.GraphQlV2.InputModels;
 using GQL.WebApp.Serviced.GraphQlV2.Models;
+using GQL.WebApp.Serviced.Managers;
 using GraphQL.Server;
 using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
@@ -32,6 +34,9 @@ namespace GQL.WebApp.Serviced
 
             var isDev = _environment.IsDevelopment();
 
+            services.AddSingleton<IUsersObservable, UsersObservable>();
+            services.AddScoped<IUsersManager, UsersManager>();
+
             services.AddGraphQl<GraphQlSchema>(c => c
                 .RegisterObject<UsersQuery>()
                 .RegisterInterface<IUserObject>(mc => mc
@@ -39,7 +44,10 @@ namespace GQL.WebApp.Serviced
                 .RegisterObject<CustomerUserObject>(mc => mc
                     .Map<CustomerUserModel>())
                 .RegisterObject<ManagerUserObject>(mc => mc
-                    .Map<ManagerUserModel>()));
+                    .Map<ManagerUserModel>())
+                .RegisterObject<UsersMutation>()
+                .RegisterInputObject<CustomerInputObject>()
+                .RegisterInputObject<ManagerInputObject>());
 
             services.AddMvc();
             services.AddDbContext<AppDbContext>(b => b.UseInMemoryDatabase(nameof(AppDbContext)));

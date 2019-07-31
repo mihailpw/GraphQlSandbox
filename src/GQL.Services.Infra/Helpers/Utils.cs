@@ -28,7 +28,7 @@ namespace GQL.Services.Infra.Helpers
                 if (!IsEnabledForRegister(propertyType))
                 {
                     // ReSharper disable once PossibleNullReferenceException
-                    throw new NotSupportedException($"The property type of {propertyInfo.DeclaringType.Name}.{propertyInfo.Name}() is not registered (type name: {propertyType.Name}).");
+                    throw new NotSupportedException($"The property type of {propertyInfo.DeclaringType.Name}.{propertyInfo.Name} is not registered (type name: {propertyType.Name}).");
                 }
 
                 return true;
@@ -165,11 +165,12 @@ namespace GQL.Services.Infra.Helpers
                         return processingType;
                     }
 
-                    if (processingType.IsGenericTypeDefinition(typeof(IEnumerable<>)))
+                    var interfaces = processingType.GetInterfaces().Append(processingType).ToArray();
+                    if (interfaces.Any(i => i.IsGenericTypeDefinition(typeof(IEnumerable<>))))
                     {
                         processingType = processingType.GenericTypeArguments[0];
                     }
-                    else if (processingType == typeof(IEnumerable))
+                    else if (interfaces.Any(i => i == typeof(IEnumerable)))
                     {
                         return typeof(object);
                     }
