@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GQL.Services.Infra", "GQL.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GQL.WebApp.Conventions", "GQL.WebApp.Conventions\GQL.WebApp.Conventions.csproj", "{7A885836-7CB7-40E5-955C-C7F5EFA800E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GQL.Annotations", "GQL.Annotations\GQL.Annotations.csproj", "{FA56FAC6-A25D-4D4A-8F0C-48FD3619B7A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GQL.WebApp.Annotated", "GQL.WebApp.Annotated\GQL.WebApp.Annotated.csproj", "{FBCD5AE3-A62B-4761-A5CA-49925963EBA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{7A885836-7CB7-40E5-955C-C7F5EFA800E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A885836-7CB7-40E5-955C-C7F5EFA800E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A885836-7CB7-40E5-955C-C7F5EFA800E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA56FAC6-A25D-4D4A-8F0C-48FD3619B7A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA56FAC6-A25D-4D4A-8F0C-48FD3619B7A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA56FAC6-A25D-4D4A-8F0C-48FD3619B7A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA56FAC6-A25D-4D4A-8F0C-48FD3619B7A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBCD5AE3-A62B-4761-A5CA-49925963EBA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCD5AE3-A62B-4761-A5CA-49925963EBA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCD5AE3-A62B-4761-A5CA-49925963EBA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCD5AE3-A62B-4761-A5CA-49925963EBA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
