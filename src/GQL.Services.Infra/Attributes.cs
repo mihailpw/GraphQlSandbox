@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Reflection;
+using GQL.Services.Infra.Helpers;
+using GraphQL.Types;
 
 namespace GQL.Services.Infra
 {
@@ -15,7 +18,7 @@ namespace GQL.Services.Infra
     }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-    public class GraphQlTypeAttribute : GraphQlAttribute, INameProvider, IDescriptionProvider, IDeprecationReasonProvider
+    public class GraphQlTypeAttribute : GraphQlAttribute, IGraphTypeInfoProvider
     {
         public string Name { get; }
         public string Description { get; set; }
@@ -25,30 +28,42 @@ namespace GQL.Services.Infra
         {
             Name = name;
         }
+
+        public void Provide(GraphType graphType, Type type)
+        {
+            graphType.Name = Name ?? type.Name;
+            graphType.Description = Description;
+            graphType.DeprecationReason = DeprecationReason;
+        }
     }
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class GraphQlFieldAttribute : GraphQlAttribute, INameProvider, IDescriptionProvider, IDeprecationReasonProvider, IReturnTypeProvider, IRequiredProvider
+    public class GraphQlFieldAttribute : GraphQlAttribute, IFieldTypeInfoProvider
     {
         public string Name { get; }
         public string Description { get; set; }
         public string DeprecationReason { get; set; }
         public Type ReturnType { get; }
-        public bool IsRequired { get; set; }
+
 
         public GraphQlFieldAttribute(string name = null, Type returnType = null)
         {
             Name = name;
             ReturnType = returnType;
         }
-    }
 
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class GraphQlIdFieldAttribute : GraphQlFieldAttribute
-    {
-        public GraphQlIdFieldAttribute(string name = null)
-            : base(name, typeof(IdObject))
+
+        public void Provide(FieldType fieldType, PropertyInfo propertyInfo)
         {
+            fieldType.Name = Name ?? propertyInfo.Name;
+            fieldType.Description = Description;
+            fieldType.DeprecationReason = DeprecationReason;
+            fieldType.Type = GraphQlUtils.GetGraphQlTypeFor(ReturnType);
+        }
+
+        public void Provide(FieldType fieldType, MethodInfo methodInfo)
+        {
+            throw new NotImplementedException();
         }
     }
 }

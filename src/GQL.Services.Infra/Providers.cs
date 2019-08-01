@@ -1,29 +1,17 @@
 ﻿using System;
+using System.Reflection;
+using GraphQL.Types;
 
 namespace GQL.Services.Infra
 {
-    public interface INameProvider
+    public interface IGraphTypeInfoProvider
     {
-        string Name { get; }
+        void Provide(GraphType graphType, Type type);
     }
 
-    public interface IReturnTypeProvider
+    public interface IFieldTypeInfoProvider
     {
-        Type ReturnType { get; }
-    }
-
-    public interface IDescriptionProvider
-    {
-        string Description { get; }
-    }
-
-    public interface IRequiredProvider
-    {
-        bool IsRequired { get; }
-    }
-
-    public interface IDeprecationReasonProvider
-    {
-        string DeprecationReason { get; }
+        void Provide(FieldType fieldType, PropertyInfo propertyInfo);
+        void Provide(FieldType fieldType, MethodInfo methodInfo);
     }
 }
