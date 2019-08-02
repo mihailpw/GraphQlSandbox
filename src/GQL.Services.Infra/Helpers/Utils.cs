@@ -268,6 +268,20 @@ namespace GQL.Services.Infra.Helpers
         }
 
 
+        public static Type UnwrapCustomType(Type type)
+        {
+            var resultType = type;
+            while (true)
+            {
+                if (Id.IsInType(resultType))
+                    resultType = Id.UnwrapType(resultType);
+                else if (NonNull.IsInType(resultType))
+                    resultType = NonNull.UnwrapType(resultType);
+                else
+                    return resultType;
+            }
+        }
+
         public static Type GetRealType(Type type)
         {
             var resultType = type;

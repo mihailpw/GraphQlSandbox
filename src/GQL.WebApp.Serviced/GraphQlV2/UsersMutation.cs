@@ -35,7 +35,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
         }
 
         [GraphQlField("createCustomers")]
-        public async Task<NonNull<IEnumerable<CustomerUserModel>>> CreateCustomersAsync(
+        public async Task<NonNull<IEnumerable<NonNull<CustomerUserModel>>>> CreateCustomersAsync(
             [GraphQlParameter] NonNull<ICollection<NonNull<CustomerInputObject>>> customers)
         {
             var customerModels = customers.Value.Select(c => new CustomerUserModel
@@ -44,8 +44,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2
                 Email = c.Value.Email,
             }).ToList();
 
-            //return await _usersManager.CreateCustomersAsync(customerModels);
-            return null;
+            return NonNull.ForAndEach(await _usersManager.CreateCustomersAsync(customerModels));
         }
     }
 }

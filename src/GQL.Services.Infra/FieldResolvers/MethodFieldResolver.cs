@@ -4,6 +4,7 @@ using System.Reflection;
 using GQL.Services.Infra.Helpers;
 using GraphQL.Resolvers;
 using GraphQL.Types;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GQL.Services.Infra.FieldResolvers
 {
@@ -28,7 +29,7 @@ namespace GQL.Services.Infra.FieldResolvers
 
             var target = _serviceType.IsInstanceOfType(context.Source)
                 ? context.Source
-                : _serviceProvider.GetService(_serviceType);
+                : _serviceProvider.GetRequiredService(_serviceType);
 
             if (target == null)
                 throw new InvalidOperationException($"Could not resolve an instance of {_serviceType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");

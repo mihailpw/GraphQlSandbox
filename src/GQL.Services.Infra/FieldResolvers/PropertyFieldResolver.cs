@@ -43,9 +43,10 @@ namespace GQL.Services.Infra.FieldResolvers
 
             if (_config.ThrowIfPropertiesTypesDifferent)
             {
-                if (!_serviceProperty.PropertyType.IsAssignableFrom(propertyInfo.PropertyType))
+                var servicePropertyType = TypeUtils.UnwrapCustomType(_serviceProperty.PropertyType);
+                if (!servicePropertyType.IsAssignableFrom(propertyInfo.PropertyType))
                 {
-                    throw new InvalidOperationException($"Property {_serviceProperty.Name} in {sourceType.Name} type does not match service's return ({propertyInfo.PropertyType.Name} instead of expected {_serviceProperty.PropertyType.Name}).");
+                    throw new InvalidOperationException($"Property {_serviceProperty.Name} in {sourceType.Name} type does not match service's return ({propertyInfo.PropertyType.Name} instead of expected {servicePropertyType.Name}).");
                 }
             }
 

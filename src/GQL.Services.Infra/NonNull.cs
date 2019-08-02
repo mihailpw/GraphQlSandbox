@@ -1,7 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GQL.Services.Infra
 {
+    public static class NonNull
+    {
+        public static NonNull<T> For<T>(T value)
+        {
+            return new NonNull<T>(value);
+        }
+
+        public static IEnumerable<NonNull<T>> Each<T>(IEnumerable<T> values)
+        {
+            return values.Select(For);
+        }
+
+        public static NonNull<IEnumerable<NonNull<T>>> ForAndEach<T>(IEnumerable<T> values)
+        {
+            return For(Each(values));
+        }
+    }
+
     public struct NonNull<T> : IEquatable<NonNull<T>>
     {
         public T Value { get; }

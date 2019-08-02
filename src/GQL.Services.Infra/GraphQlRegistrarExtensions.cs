@@ -3,6 +3,7 @@ using GQL.Services.Infra.Core;
 using GQL.Services.Infra.Registrar;
 using GQL.Services.Infra.Types;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

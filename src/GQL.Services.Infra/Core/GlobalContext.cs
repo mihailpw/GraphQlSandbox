@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GQL.Services.Infra.Core
@@ -13,7 +14,7 @@ namespace GQL.Services.Infra.Core
 
         public static void Populate(IServiceProvider serviceProvider)
         {
-            ServiceProvider = serviceProvider;
+            ServiceProvider = new RequestServicesProvider(serviceProvider.GetService<IHttpContextAccessor>());
             TypeRegistry = serviceProvider.GetService<IGraphQlTypeRegistry>();
             PartsFactory = serviceProvider.GetService<IGraphQlPartsFactory>();
             Config = new Config();
