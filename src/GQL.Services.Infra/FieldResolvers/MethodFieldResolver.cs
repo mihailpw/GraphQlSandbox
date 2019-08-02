@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using GQL.Services.Infra.Core;
 using GQL.Services.Infra.Helpers;
 using GraphQL.Resolvers;
 using GraphQL.Types;
@@ -12,14 +11,14 @@ namespace GQL.Services.Infra.FieldResolvers
     {
         private readonly Type _serviceType;
         private readonly MethodInfo _serviceMethod;
-        private readonly IScopedProvider _scopedProvider;
+        private readonly IServiceProvider _serviceProvider;
 
 
-        public MethodFieldResolver(Type serviceType, MethodInfo serviceMethod, IScopedProvider scopedProvider)
+        public MethodFieldResolver(Type serviceType, MethodInfo serviceMethod, IServiceProvider serviceProvider)
         {
             _serviceType = serviceType;
             _serviceMethod = serviceMethod;
-            _scopedProvider = scopedProvider;
+            _serviceProvider = serviceProvider;
         }
 
 
@@ -29,7 +28,7 @@ namespace GQL.Services.Infra.FieldResolvers
 
             var target = _serviceType.IsInstanceOfType(context.Source)
                 ? context.Source
-                : _scopedProvider.Get(_serviceType);
+                : _serviceProvider.GetService(_serviceType);
 
             if (target == null)
                 throw new InvalidOperationException($"Could not resolve an instance of {_serviceType.Name} to execute {(context.ParentType != null ? $"{context.ParentType.Name}." : null)}{context.FieldName}");

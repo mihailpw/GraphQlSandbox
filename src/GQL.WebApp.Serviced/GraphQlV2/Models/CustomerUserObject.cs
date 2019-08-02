@@ -1,5 +1,6 @@
 ﻿using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {
@@ -8,8 +9,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Models
     {
         [GraphQlField(
             nameof(CustomerUserModel.IsActive),
-            Description = "Defines customer is active or not",
-            IsRequired = true)]
-        public bool IsActive { get; set; }
+            Description = "Defines customer is active or not")]
+        public NonNull<bool> IsActive { get; set; }
     }
 }

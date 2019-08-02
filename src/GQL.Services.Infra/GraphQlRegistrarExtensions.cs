@@ -1,8 +1,10 @@
 ﻿using System;
 using GQL.Services.Infra.Core;
 using GQL.Services.Infra.Registrar;
+using GQL.Services.Infra.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace GQL.Services.Infra
 {
@@ -15,9 +17,13 @@ namespace GQL.Services.Infra
 
             var registry = new GraphQlTypeRegistry();
             services.AddHttpContextAccessor();
-            services.AddTransient<IScopedProvider, ScopedProvider>();
-            services.AddSingleton<IGraphQlPartsFactory, GraphQlPartsFactory>();
-            services.AddSingleton<IGraphQlTypeRegistry>(registry);
+            services.TryAddSingleton<IGraphQlPartsFactory, GraphQlPartsFactory>();
+            services.TryAddSingleton<IGraphQlTypeRegistry>(registry);
+
+            services.TryAddScoped(typeof(AutoEnumerationGraphType<>));
+            services.TryAddScoped(typeof(AutoInputObjectGraphType<>));
+            services.TryAddScoped(typeof(AutoInterfaceGraphType<>));
+            services.TryAddScoped(typeof(AutoInputObjectGraphType<>));
 
             var options = new Configurator(services, registry);
             configureAction(options);

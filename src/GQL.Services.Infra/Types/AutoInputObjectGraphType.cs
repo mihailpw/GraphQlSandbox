@@ -2,26 +2,32 @@
 using System.Linq;
 using GQL.Services.Infra.Core;
 using GQL.Services.Infra.Helpers;
+using GQL.Services.Infra.Providers;
+using GraphQL;
 using GraphQL.Types;
 
 namespace GQL.Services.Infra.Types
 {
     internal sealed class AutoInputObjectGraphType<T> : InputObjectGraphType
     {
-        private readonly IGraphQlPartsFactory _partsFactory = GlobalContext.PartsFactory;
-
-
         public AutoInputObjectGraphType()
         {
-            var type = typeof(T);
+            var serviceProvider = GlobalContext.ServiceProvider;
+            var partsFactory = GlobalContext.PartsFactory;
 
-            Name = type.GetNameOrDefault(type.Name);
-            Description = type.GetDescription();
-            DeprecationReason = type.GetDeprecationReason();
+            var type = typeof(T);
+            if (!type.IsGraphQlMember())
+            {
+                throw new InvalidOperationException($"Type {type.Name} should be marked with {nameof(GraphQLAttribute)}.");
+            }
+
+            type.FindInAttributes<IGraphTypeInfoProvider>()?.Provide(this, type, serviceProvider);
 
             foreach (var propertyInfo in GraphQlUtils.GetRegisteredProperties(typeof(T)))
             {
-                AddField(_partsFactory.CreateFieldType(propertyInfo));
+                var fieldType = partsFactory.CreateFieldType(propertyInfo);
+                propertyInfo.FindInAttributes<IFieldTypeInfoProvider>()?.Provide(fieldType, propertyInfo, serviceProvider);
+                AddField(fieldType);
             }
 
             if (!Fields.Any())

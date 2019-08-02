@@ -1,12 +1,11 @@
 ﻿using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {
     public abstract class EntityObjectBase
     {
-        [GraphQlIdField(
-            Description = "The identificator",
-            IsRequired = true)]
-        public string Id { get; set; }
+        [GraphQlField(Description = "The identificator")]
+        public Id<string> Id { get; set; }
     }
 }

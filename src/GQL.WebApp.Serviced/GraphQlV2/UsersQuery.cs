@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 using GQL.WebApp.Serviced.Infra;
 using GraphQL.Execution;
 using GraphQL.Types;
@@ -11,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GQL.WebApp.Serviced.GraphQlV2
 {
+    [GraphQlType("UsersQuery")]
     public class UsersQuery
     {
         private readonly AppDbContext _appDbContext;
@@ -21,10 +23,11 @@ namespace GQL.WebApp.Serviced.GraphQlV2
             _appDbContext = appDbContext;
         }
 
+
         [GraphQlField("user")]
         public async Task<UserModelBase> ResolveUserAsync(
             ResolveFieldContext context,
-            [GraphQlParameter(Description = "User identificator", IsRequired = true)] string id,
+            [GraphQlParameter(Description = "User identificator")] NonNull<string> id,
             [GraphQlParameter(Description = "User type")] UserType? type = null)
         {
             var user = await GetUserModelSet(context, type)

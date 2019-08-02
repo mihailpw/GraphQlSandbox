@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
@@ -8,10 +9,10 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Models
     [GraphQlType("UserInterface")]
     public interface IUserObject
     {
-        [GraphQlIdField(
-            Description = "The identificator",
-            IsRequired = true)]
-        string Id { get; set; }
+        [GraphQlField(
+            nameof(UserModelBase.Id),
+            Description = "The identificator")]
+        Id<string> Id { get; set; }
 
         [GraphQlField(
             nameof(UserModelBase.Name),

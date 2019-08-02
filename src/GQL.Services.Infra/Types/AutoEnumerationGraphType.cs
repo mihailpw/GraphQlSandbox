@@ -1,5 +1,7 @@
 ﻿using System;
+using GQL.Services.Infra.Core;
 using GQL.Services.Infra.Helpers;
+using GQL.Services.Infra.Providers;
 using GraphQL;
 using GraphQL.Types;
 
@@ -9,11 +11,11 @@ namespace GQL.Services.Infra.Types
     {
         public AutoEnumerationGraphType()
         {
+            var serviceProvider = GlobalContext.ServiceProvider;
+
             var type = typeof(T);
 
-            Name = type.GetNameOrDefault(type.Name);
-            Description = type.GetDescription();
-            DeprecationReason = type.GetDeprecationReason();
+            type.FindInAttributes<IGraphTypeInfoProvider>()?.Provide(this, type, serviceProvider);
         }
 
 

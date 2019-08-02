@@ -2,6 +2,7 @@
 using System.Linq;
 using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models

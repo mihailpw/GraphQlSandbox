@@ -3,11 +3,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 using GQL.WebApp.Serviced.GraphQlV2.InputModels;
 using GQL.WebApp.Serviced.Managers;
 
 namespace GQL.WebApp.Serviced.GraphQlV2
 {
+    [GraphQlType("UsersMutation")]
     public class UsersMutation
     {
         private readonly IUsersManager _usersManager;
@@ -19,30 +21,31 @@ namespace GQL.WebApp.Serviced.GraphQlV2
         }
 
 
-        [GraphQlField("createManager", IsRequired = true)]
-        public async Task<ManagerUserModel> CreateManagerAsync(
-            [GraphQlParameter(IsRequired = true)] ManagerInputObject manager)
+        [GraphQlField("createManager")]
+        public async Task<NonNull<ManagerUserModel>> CreateManagerAsync(
+            [GraphQlParameter] NonNull<ManagerInputObject> manager)
         {
             var managerModel = new ManagerUserModel
             {
-                Name = manager.Name,
-                Email = manager.Email,
+                Name = manager.Value.Name,
+                Email = manager.Value.Email,
             };
 
             return await _usersManager.CreateManagerAsync(managerModel);
         }
 
         [GraphQlField("createCustomers")]
-        public async Task<IEnumerable<CustomerUserModel>> CreateCustomersAsync(
-            [GraphQlParameter(IsRequired = true)] ICollection<CustomerInputObject> customers)
+        public async Task<NonNull<IEnumerable<CustomerUserModel>>> CreateCustomersAsync(
+            [GraphQlParameter] NonNull<ICollection<NonNull<CustomerInputObject>>> customers)
         {
-            var customerModels = customers.Select(c => new CustomerUserModel
+            var customerModels = customers.Value.Select(c => new CustomerUserModel
             {
-                Name = c.Name,
-                Email = c.Email,
+                Name = c.Value.Name,
+                Email = c.Value.Email,
             }).ToList();
 
-            return await _usersManager.CreateCustomersAsync(customerModels);
+            //return await _usersManager.CreateCustomersAsync(customerModels);
+            return null;
         }
     }
 }

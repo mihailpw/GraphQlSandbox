@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using GQL.Services.Infra.Types;
 using GraphQL;
 using GraphQL.Types;
@@ -33,7 +32,6 @@ namespace GQL.Services.Infra.Core
                 [typeof(ulong)] = typeof(ULongGraphType),
                 [typeof(ushort)] = typeof(UShortGraphType),
                 [typeof(Uri)] = typeof(UriGraphType),
-                [typeof(IdObject)] = typeof(IdGraphType),
             };
         }
 

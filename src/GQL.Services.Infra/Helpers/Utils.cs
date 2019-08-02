@@ -24,7 +24,7 @@ namespace GQL.Services.Infra.Helpers
                     return false;
                 }
 
-                var propertyType = propertyInfo.GetReturnTypeOrDefault(propertyInfo.PropertyType);
+                var propertyType = propertyInfo.PropertyType;
                 if (!IsEnabledForRegister(propertyType))
                 {
                     // ReSharper disable once PossibleNullReferenceException
@@ -49,7 +49,7 @@ namespace GQL.Services.Infra.Helpers
                     return false;
                 }
 
-                var returnType = methodInfo.GetReturnTypeOrDefault(methodInfo.ReturnType);
+                var returnType = methodInfo.ReturnType;
                 if (!IsEnabledForRegister(returnType))
                 {
                     // ReSharper disable once PossibleNullReferenceException
@@ -72,35 +72,32 @@ namespace GQL.Services.Infra.Helpers
             return methodInfo.GetParameters().Where(p => !TypeUtils.ResolveFieldContext.IsInType(p.ParameterType));
         }
 
-        public static Type GetGraphQlTypeFor(Type type, bool isRequired = false)
+        public static Type GetGraphQlTypeFor(Type type)
         {
-            var processingType = TypeUtils.Task.UnwrapType(type);
-            var isNullable = !processingType.IsValueType;
+            if (TypeUtils.Task.IsInType(type))
+                return GetGraphQlTypeFor(TypeUtils.Task.UnwrapType(type));
 
-            if (TypeUtils.Nullable.IsInType(processingType))
+            if (TypeUtils.Nullable.IsInType(type))
+                return GetGraphQlTypeFor(TypeUtils.Nullable.UnwrapType(type));
+
+            if (TypeUtils.Id.IsInType(type))
+                return typeof(IdGraphType);
+
+            if (TypeUtils.NonNull.IsInType(type))
             {
-                processingType = TypeUtils.Nullable.UnwrapType(processingType);
-                isNullable = true;
+                var elementType = TypeUtils.NonNull.UnwrapType(type);
+                var elementGraphQlType = GetGraphQlTypeFor(elementType);
+                return typeof(NonNullGraphType<>).MakeGenericType(elementGraphQlType);
             }
 
-            Type graphQlType;
-            if (TypeUtils.Enumerable.IsInType(processingType))
+            if (TypeUtils.Enumerable.IsInType(type))
             {
-                var enumerableElementType = TypeUtils.Enumerable.UnwrapType(processingType);
-                var innerGraphQlType = GetGraphQlTypeFor(enumerableElementType);
-                graphQlType = typeof(ListGraphType<>).MakeGenericType(innerGraphQlType);
-            }
-            else
-            {
-                graphQlType = GlobalContext.TypeRegistry.Resolve(processingType);
+                var elementType = TypeUtils.Enumerable.UnwrapType(type);
+                var elementGraphQlType = GetGraphQlTypeFor(elementType);
+                return typeof(ListGraphType<>).MakeGenericType(elementGraphQlType);
             }
 
-            if (isRequired || !isNullable)
-            {
-                graphQlType = typeof(NonNullGraphType<>).MakeGenericType(graphQlType);
-            }
-
-            return graphQlType;
+            return GlobalContext.TypeRegistry.Resolve(type);
         }
 
         public static bool IsEnabledForRegister(Type type)
@@ -138,7 +135,7 @@ namespace GQL.Services.Infra.Helpers
                 }
                 else
                 {
-                    var value = context.GetArgument(returnType, parameterInfo.GetNameOrDefault(parameterInfo.Name));
+                    var value = context.GetArgument(returnType, parameterInfo.Name);
                     yield return value;
                 }
             }
@@ -225,6 +222,36 @@ namespace GQL.Services.Infra.Helpers
             }
         }
 
+        public static class Id
+        {
+            public static bool IsInType(Type type)
+            {
+                return type.IsGenericTypeDefinition(typeof(Id<>));
+            }
+
+            public static Type UnwrapType(Type type)
+            {
+                return type.IsGenericTypeDefinition(typeof(Id<>))
+                    ? type.GenericTypeArguments[0]
+                    : type;
+            }
+        }
+
+        public static class NonNull
+        {
+            public static bool IsInType(Type type)
+            {
+                return type.IsGenericTypeDefinition(typeof(NonNull<>));
+            }
+
+            public static Type UnwrapType(Type type)
+            {
+                return type.IsGenericTypeDefinition(typeof(NonNull<>))
+                    ? type.GenericTypeArguments[0]
+                    : type;
+            }
+        }
+
         public static class ResolveFieldContext
         {
             public static bool IsInType(Type type)
@@ -252,6 +279,10 @@ namespace GQL.Services.Infra.Helpers
                     resultType = Enumerable.UnwrapType(resultType);
                 else if (Task.IsInType(resultType))
                     resultType = Task.UnwrapType(resultType);
+                else if (Id.IsInType(resultType))
+                    resultType = Id.UnwrapType(resultType);
+                else if (NonNull.IsInType(resultType))
+                    resultType = NonNull.UnwrapType(resultType);
                 else
                     return resultType;
             }

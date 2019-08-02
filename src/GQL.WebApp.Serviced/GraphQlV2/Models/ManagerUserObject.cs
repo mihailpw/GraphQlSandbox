@@ -1,5 +1,6 @@
 ﻿using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Attributes;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {
@@ -10,8 +11,7 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Models
     {
         [GraphQlField(
             nameof(ManagerUserModel.NumberOfSales),
-            Description = "Number of sales",
-            IsRequired = true)]
-        public int NumberOfSales { get; set; }
+            Description = "Number of sales")]
+        public NonNull<int> NumberOfSales { get; set; }
     }
 }
