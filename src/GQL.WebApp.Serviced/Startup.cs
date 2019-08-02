@@ -1,6 +1,7 @@
 ﻿using GQL.DAL;
 using GQL.DAL.Models;
 using GQL.Services.Infra;
+using GQL.Services.Infra.Registrar;
 using GQL.WebApp.Serviced.GraphQlV2;
 using GQL.WebApp.Serviced.GraphQlV2.InputModels;
 using GQL.WebApp.Serviced.GraphQlV2.Models;
@@ -37,15 +38,13 @@ namespace GQL.WebApp.Serviced
             services.AddSingleton<IUsersObservable, UsersObservable>();
             services.AddScoped<IUsersManager, UsersManager>();
 
-            services.AddGraphQl<GraphQlSchema>(c => c
-                .RegisterObject<UsersQuery>()
+            services.AddGraphQlQueryMutation<UsersQuery, UsersMutation>(c => c
                 .RegisterInterface<IUserObject>(mc => mc
                     .Map<UserModelBase>())
                 .RegisterObject<CustomerUserObject>(mc => mc
                     .Map<CustomerUserModel>())
                 .RegisterObject<ManagerUserObject>(mc => mc
                     .Map<ManagerUserModel>())
-                .RegisterObject<UsersMutation>()
                 .RegisterInputObject<CustomerInputObject>()
                 .RegisterInputObject<ManagerInputObject>());
 
@@ -68,12 +67,9 @@ namespace GQL.WebApp.Serviced
                 app.UseHsts();
             }
 
-            app.UseGraphQl();
+            app.UseGraphQlQueryMutation<UsersQuery, UsersMutation>();
 
             app.UseWebSockets();
-
-            app.UseGraphQL<GraphQlSchema>();
-            app.UseGraphQLWebSockets<GraphQlSchema>();
 
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions { GraphQLEndPoint = PathString.FromUriComponent("/graphql") });
 
