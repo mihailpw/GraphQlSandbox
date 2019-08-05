@@ -1,12 +1,11 @@
 ﻿using GQL.DAL;
 using GQL.DAL.Models;
-using GQL.Services.Infra;
-using GQL.Services.Infra.Registrar;
 using GQL.WebApp.Serviced.GraphQlV2;
 using GQL.WebApp.Serviced.GraphQlV2.InputModels;
 using GQL.WebApp.Serviced.GraphQlV2.Models;
 using GQL.WebApp.Serviced.Managers;
 using GraphQL.Server;
+using GraphQl.Server.Annotations.Registrar;
 using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

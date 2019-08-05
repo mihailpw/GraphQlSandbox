@@ -1,6 +1,6 @@
 ﻿using GQL.DAL.Models;
-using GQL.Services.Infra;
-using GQL.Services.Infra.Attributes;
+using GraphQl.Server.Annotations;
+using GraphQl.Server.Annotations.Attributes;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {

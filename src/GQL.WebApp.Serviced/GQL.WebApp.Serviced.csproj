@@ -6,16 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="3.0.0-preview-1175" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="3.5.0-alpha0014" />
-    <PackageReference Include="GraphQL.Server.Transports.WebSockets" Version="3.5.0-alpha0014" />
     <PackageReference Include="GraphQL.Server.Ui.Playground" Version="3.5.0-alpha0014" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\submodules\GraphQl.Server.Annotations\src\GraphQl.Server.Annotations\GraphQl.Server.Annotations.csproj" />
     <ProjectReference Include="..\GQL.DAL\GQL.DAL.csproj" />
-    <ProjectReference Include="..\GQL.Services.Infra\GQL.Services.Infra.csproj" />
   </ItemGroup>
 
 </Project>

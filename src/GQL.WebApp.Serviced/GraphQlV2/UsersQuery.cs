@@ -3,10 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
-using GQL.Services.Infra;
-using GQL.Services.Infra.Attributes;
 using GQL.WebApp.Serviced.Infra;
 using GraphQL.Execution;
+using GraphQl.Server.Annotations;
+using GraphQl.Server.Annotations.Attributes;
 using GraphQL.Types;
 using Microsoft.EntityFrameworkCore;
 

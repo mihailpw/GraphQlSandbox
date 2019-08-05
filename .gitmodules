@@ -1,0 +1,3 @@
+[submodule "submodules/GraphQl.Server.Annotations"]
+	path = submodules/GraphQl.Server.Annotations
+	url = ../GraphQl.Server.Annotations
