@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using GQL.Services.Infra.Common.Helpers;
+using GQL.Services.Infra.Providers;
 using GraphQL.Resolvers;
 using GraphQL.Types;
 
@@ -76,13 +77,15 @@ namespace GQL.Services.Infra.Common
 
         private static QueryArgument CreateQueryArgument(ParameterInfo parameterInfo)
         {
-            var defaultValue = parameterInfo.HasDefaultValue ? parameterInfo.DefaultValue : null;
-
-            return new QueryArgument(GraphQlUtils.GetGraphQlTypeFor(parameterInfo.ParameterType))
+            var queryArgument = new QueryArgument(GraphQlUtils.GetGraphQlTypeFor(parameterInfo.ParameterType))
             {
                 Name = parameterInfo.Name,
-                DefaultValue = defaultValue
+                DefaultValue = parameterInfo.HasDefaultValue ? parameterInfo.DefaultValue : null
             };
+
+            parameterInfo.FindInAttributes<IQueryArgumentInfoProvider>()?.Provide(queryArgument, parameterInfo, GlobalContext.ServiceProvider);
+
+            return queryArgument;
         }
     }
 }

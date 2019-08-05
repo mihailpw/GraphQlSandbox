@@ -1,12 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using GQL.Services.Infra.Attributes;
+using GQL.Services.Infra.Providers;
 
 namespace GQL.Services.Infra.Common.Helpers
 {
+    internal static class EnumerableExtensions
+    {
+        public static T[] ToArray<T>(this IEnumerable<T> enumerable, int length)
+        {
+            var array = new T[length];
+            var i = 0;
+            foreach (var value in enumerable)
+            {
+                array[i] = value;
+                i++;
+            }
+
+            return array;
+        }
+    }
+
     internal static class CustomAttributeProviderExtensions
     {
+        public static string GetNameOrDefault(this ICustomAttributeProvider attributeProvider, string defaultName)
+        {
+            return attributeProvider.FindInAttributes<INameProvider>()?.Name ?? defaultName;
+        }
+
         public static bool IsGraphQlMember(this ICustomAttributeProvider attributeProvider)
         {
             return attributeProvider.FindInAttributes<GraphQlAttribute>() != null;

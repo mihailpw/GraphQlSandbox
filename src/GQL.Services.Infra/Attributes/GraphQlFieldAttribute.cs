@@ -6,7 +6,7 @@ using GraphQL.Types;
 namespace GQL.Services.Infra.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
-    public class GraphQlFieldAttribute : GraphQlAttribute, IFieldTypeInfoProvider
+    public class GraphQlFieldAttribute : GraphQlAttribute, INameProvider, IFieldTypeInfoProvider
     {
         public string Name { get; }
         public string Description { get; set; }

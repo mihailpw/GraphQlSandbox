@@ -68,7 +68,7 @@ namespace GQL.Services.Infra.Common.Helpers
 
         public static IEnumerable<ParameterInfo> GetAvailableParameters(MethodInfo methodInfo)
         {
-            return methodInfo.GetParameters().Where(p => !TypeUtils.ResolveFieldContext.IsInType(p.ParameterType));
+            return methodInfo.GetParameters().Where(p => p.IsGraphQlMember());
         }
 
         public static Type GetGraphQlTypeFor(Type type)
@@ -104,41 +104,6 @@ namespace GQL.Services.Infra.Common.Helpers
             var realType = TypeUtils.GetRealType(type);
             var isEnabledForRegister = GlobalContext.TypeRegistry.IsRegistered(realType);
             return isEnabledForRegister;
-        }
-
-        public static IEnumerable<object> BuildArguments(
-            MethodInfo methodInfo,
-            ResolveFieldContext context)
-        {
-            foreach (var parameterInfo in methodInfo.GetParameters())
-            {
-                var returnType = parameterInfo.ParameterType;
-                if (TypeUtils.ResolveFieldContext.IsInType(returnType))
-                {
-                    if (returnType.IsGenericType)
-                    {
-                        var contextSourceType = returnType.GenericTypeArguments[0];
-                        if (contextSourceType.IsInstanceOfType(context.Source))
-                        {
-                            yield return Activator.CreateInstance(typeof(ResolveFieldContext<>).MakeGenericType(contextSourceType), context);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Provided context with {contextSourceType.Name} type can not be processed. Context type can be only with {context.Source.GetType().Name} type.");
-                        }
-                    }
-                    else
-                    {
-                        yield return context;
-                    }
-                }
-                else
-                {
-                    var value = context.GetArgument(returnType, parameterInfo.Name);
-                    yield return value;
-                }
-            }
-
         }
     }
 

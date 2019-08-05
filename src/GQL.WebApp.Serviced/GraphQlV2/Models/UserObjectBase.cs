@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using GQL.DAL.Models;
-using GQL.Services.Infra;
 using GQL.Services.Infra.Attributes;
-using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {
@@ -27,29 +25,28 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Models
         [GraphQlField(
             nameof(UserModelBase.Roles),
             Description = "User roles")]
-        public IEnumerable<string> GetRoles(ResolveFieldContext<UserModelBase> context)
+        public IEnumerable<string> GetRoles(UserModelBase source)
         {
-            return context.Source.Roles.Select(r => r.Role.Name);
+            return source.Roles.Select(r => r.Role.Name);
         }
 
         [GraphQlField(
             nameof(UserModelBase.Friends),
             Description = "User friends")]
-        public IEnumerable<UserModelBase> GetFriends(ResolveFieldContext<UserModelBase> context, string email = null)
+        public IEnumerable<UserModelBase> GetFriends(
+            UserModelBase source,
+            [GraphQlParameter("email")] string email2 = null)
         {
-            if (context.Source.Friends == null)
+            if (source.Friends == null)
             {
                 return null;
             }
 
-            var friends = context
-                .Source
-                .Friends
-                .Select(r => r.Friend);
+            var friends = source.Friends.Select(r => r.Friend);
 
-            if (!string.IsNullOrEmpty(email))
+            if (!string.IsNullOrEmpty(email2))
             {
-                friends = friends.Where(f => f.Email == email);
+                friends = friends.Where(f => f.Email == email2);
             }
 
             return friends;

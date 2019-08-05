@@ -2,7 +2,6 @@
 using GQL.DAL.Models;
 using GQL.Services.Infra;
 using GQL.Services.Infra.Attributes;
-using GraphQL.Types;
 
 namespace GQL.WebApp.Serviced.GraphQlV2.Models
 {
@@ -32,11 +31,13 @@ namespace GQL.WebApp.Serviced.GraphQlV2.Models
         [GraphQlField(
             nameof(UserModelBase.Roles),
             Description = "User roles")]
-        IEnumerable<string> GetRoles(ResolveFieldContext<UserModelBase> context);
+        IEnumerable<string> GetRoles(UserModelBase source);
 
         [GraphQlField(
             nameof(UserModelBase.Friends),
             Description = "User friends")]
-        IEnumerable<UserModelBase> GetFriends(ResolveFieldContext<UserModelBase> context, string email = null);
+        IEnumerable<UserModelBase> GetFriends(
+            UserModelBase source,
+            [GraphQlParameter("email")] string email2 = null);
     }
 }

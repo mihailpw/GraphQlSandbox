@@ -5,7 +5,7 @@ using GraphQL.Types;
 namespace GQL.Services.Infra.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-    public class GraphQlTypeAttribute : GraphQlAttribute, IGraphTypeInfoProvider
+    public class GraphQlTypeAttribute : GraphQlAttribute, INameProvider, IGraphTypeInfoProvider
     {
         public string Name { get; }
         public string Description { get; set; }
