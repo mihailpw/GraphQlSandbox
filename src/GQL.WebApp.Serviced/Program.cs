@@ -18,7 +18,11 @@ namespace GQL.WebApp.Serviced
 
         private static void ConfigureLogging(WebHostBuilderContext context, ILoggingBuilder builder)
         {
-            builder.AddConsole(c => c.IncludeScopes = true);
+            builder.AddConsole(c =>
+            {
+                c.IncludeScopes = true;
+                c.LogToStandardErrorThreshold = LogLevel.Trace;
+            });
         }
     }
 }

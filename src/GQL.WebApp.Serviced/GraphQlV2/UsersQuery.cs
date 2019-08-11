@@ -47,6 +47,17 @@ namespace GQL.WebApp.Serviced.GraphQlV2
             return users;
         }
 
+        [GraphQlField("usersPage")]
+        public async Task<Page<UserModelBase>> ResolveUsersPageAsync(
+            ResolveFieldContext context,
+            [GraphQlParameter(Description = "User type")] UserType? type = null)
+        {
+            var users = await GetUserModelSet(context, type)
+                .ToListAsync();
+
+            return users.AsPage(0, 10, 2, 2, 2);
+        }
+
         [GraphQlField("usersCount")]
         public async Task<int?> ResolveUsersCountAsync(
             ResolveFieldContext context,

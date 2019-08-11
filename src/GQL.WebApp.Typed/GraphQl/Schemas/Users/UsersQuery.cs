@@ -1,13 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using GQL.DAL;
 using GQL.DAL.Models;
+using GQL.WebApp.Typed.GraphQl.Extensions;
 using GQL.WebApp.Typed.GraphQl.Infra;
 using GQL.WebApp.Typed.GraphQl.Models;
 using GQL.WebApp.Typed.Infra;
+using GraphQL.Builders;
 using GraphQL.Execution;
 using GraphQL.Types;
+using GraphQL.Types.Relay.DataObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
@@ -39,6 +44,15 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                     }),
                 resolve: ResolveUserAsync);
 
+            Connection<UserInterface>()
+                .Name("usersConnection")
+                .Argument<IntGraphType, int>("sss", null)
+                .Bidirectional()
+                .PageSize(10)
+                .ResolveAsync(ResolveUsers);
+
+            this.MethodField<UserInterface>("user2", nameof(ResolveUser2Async));
+
             FieldAsync<ListGraphType<UserInterface>>(
                 "users",
                 arguments: new QueryArguments(
@@ -64,10 +78,49 @@ namespace GQL.WebApp.Typed.GraphQl.Schemas.Users
                 resolve: ResolveCustomersAsync);
         }
 
+        private async Task<object> ResolveUsers(ResolveConnectionContext<object> context)
+        {
+            Connection<T> ToConnection<T>(IReadOnlyList<T> values, int totalCount, bool hasPreviousPage, bool hasNextPage, Func<T, string> cursorSelector)
+                where T : class
+            {
+                var firstValue = values.Count > 0 ? values[0] : null;
+                var lastValue = values.Count > 0 ? values[values.Count - 1] : null;
+
+                return new Connection<T>
+                {
+                    TotalCount = totalCount,
+                    PageInfo = new PageInfo
+                    {
+                        HasPreviousPage = hasPreviousPage,
+                        HasNextPage = hasNextPage,
+                        StartCursor = firstValue != null ? cursorSelector(firstValue) : null,
+                        EndCursor = lastValue != null ? cursorSelector(lastValue) : null,
+                    },
+                    Edges = values.Select(v => new Edge<T> { Cursor = cursorSelector(v), Node = v }).ToList(),
+                };
+            }
+
+            var users = await GetUserModelSet(context)
+                .ToListAsync();
+
+            return ToConnection(users, 200, true, true, m => m.Id);
+        }
+
 
         private async Task<object> ResolveUserAsync(ResolveFieldContext<object> context)
         {
             var id = context.GetArgument<string>("id");
+            var user = await GetUserModelSet(context)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            return user;
+        }
+
+        private async Task<object> ResolveUser2Async(
+            ResolveFieldContext<object> context,
+            [QueryArgument] string id,
+            [QueryArgument(typeof(UserTypeEnum))] UserType? userType = null)
+        {
             var user = await GetUserModelSet(context)
                 .FirstOrDefaultAsync(u => u.Id == id);
 

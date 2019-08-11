@@ -44,7 +44,9 @@ namespace GQL.WebApp.Serviced.GraphQlV2
                 Email = c.Value.Email,
             }).ToList();
 
-            return NonNull.ForAndEach(await _usersManager.CreateCustomersAsync(customerModels));
+            var createdCustomer = await _usersManager.CreateCustomersAsync(customerModels);
+
+            return createdCustomer.AsNonNullAndEach();
         }
     }
 }
